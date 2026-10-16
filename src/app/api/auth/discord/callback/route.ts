@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { NextResponse, type NextRequest } from "next/server";
+import { connection, NextResponse, type NextRequest } from "next/server";
 import { avatarUrl, exchangeCode, fetchMe } from "@/lib/discord/api";
 import { upsertDiscordUser } from "@/lib/auth/users";
 import { createSession } from "@/lib/auth/session";
@@ -7,6 +7,8 @@ import { env } from "@/lib/env";
 import { safeNext } from "@/lib/safe-redirect";
 
 export async function GET(req: NextRequest) {
+  // konfiguracja jest czytana w czasie żądania (zmienne środowiskowe kontenera), nigdy przy buildzie
+  await connection();
   const base = env().APP_URL;
   const store = await cookies();
   const state = req.nextUrl.searchParams.get("state");
