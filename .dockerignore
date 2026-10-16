@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.pgdata
+.env
+.env.*
+!.env.example
+tests
+*.md
+!public/assets/README.md

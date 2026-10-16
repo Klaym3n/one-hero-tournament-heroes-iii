@@ -1,0 +1,132 @@
+{
+    "_comment": "Egg Pterodactyla dla serwisu turniejowego HoMM3 One Hero. Zaimportuj w panelu: Admin → Nests → Import Egg.",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-15T12:00:00+00:00",
+    "name": "HoMM3 Turniej One Hero",
+    "author": "admin@example.com",
+    "description": "Serwis turniejowy Heroes III (Next.js). Wymaga osobnej bazy PostgreSQL 14+ (np. egg PostgreSQL) oraz aplikacji Discord (OAuth + bot). Grafiki wgrywaj do katalogu assets/ w menedżerze plików.",
+    "features": null,
+    "docker_images": {
+        "HoMM3 Turniej": "ghcr.io/TWOJ-LOGIN/homm3-tournament:latest"
+    },
+    "file_denylist": [],
+    "startup": "/app/start.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Ready in\"\r\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/sh\r\n# Aplikacja jest w obrazie Dockera – instalacja tworzy tylko katalog na grafiki.\r\nmkdir -p /mnt/server/assets/factions /mnt/server/assets/heroes /mnt/server/assets/ui\r\necho \"Gotowe. Grafiki wgrywaj do assets/factions i assets/heroes.\"",
+            "container": "alpine:3.20",
+            "entrypoint": "sh"
+        }
+    },
+    "variables": [
+        {
+            "name": "Publiczny adres serwisu",
+            "description": "Pełny adres (https://…) bez końcowego ukośnika. Musi zgadzać się z Redirect URI w aplikacji Discord: APP_URL/api/auth/discord/callback",
+            "env_variable": "APP_URL",
+            "default_value": "https://turniej.example.com",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Sekret sesji",
+            "description": "Losowy ciąg min. 32 znaków (np. openssl rand -hex 32).",
+            "env_variable": "SESSION_SECRET",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": true,
+            "rules": "required|string|min:32",
+            "field_type": "text"
+        },
+        {
+            "name": "Adres bazy PostgreSQL",
+            "description": "postgres://użytkownik:hasło@host:port/baza",
+            "env_variable": "DATABASE_URL",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Discord Client ID",
+            "description": "ID aplikacji Discord (OAuth2).",
+            "env_variable": "DISCORD_CLIENT_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Discord Client Secret",
+            "description": "Sekret aplikacji Discord (OAuth2).",
+            "env_variable": "DISCORD_CLIENT_SECRET",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Discord Bot Token",
+            "description": "Token bota (powiadomienia DM, weryfikacja członkostwa, ogłoszenia rund).",
+            "env_variable": "DISCORD_BOT_TOKEN",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "ID serwera Discord",
+            "description": "Guild ID serwera turnieju.",
+            "env_variable": "DISCORD_GUILD_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "ID kanału ogłoszeń",
+            "description": "Kanał do ogłoszeń rund i powiadomień awaryjnych (gdy gracz ma zablokowane DM).",
+            "env_variable": "DISCORD_CHANNEL_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Zaproszenie na serwer Discord",
+            "description": "Stały link zaproszenia (https://discord.gg/…), widoczny w stopce.",
+            "env_variable": "DISCORD_INVITE_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Discord ID pierwszych administratorów",
+            "description": "Lista Discord ID oddzielona przecinkami – te konta dostaną rolę Administratora przy logowaniu.",
+            "env_variable": "ADMIN_DISCORD_IDS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        }
+    ]
+}

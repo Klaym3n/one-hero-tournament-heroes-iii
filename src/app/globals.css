@@ -1,0 +1,449 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Motyw "Heroes III" – okna z kamienno-złotą ramką, przyciski
+   jak w interfejsie gry, granatowo-fioletowe tło.
+   Grafiki oryginalne można podmienić w public/assets/ui/.
+   ============================================================ */
+
+:root {
+  --bg-0: #0c0a14;
+  --bg-1: #12101c;
+  --bg-2: #1b1830;
+  --bg-3: #262142;
+  --panel: #1a1628;
+  --gold: #d4af37;
+  --gold-light: #f1d77a;
+  --gold-dark: #8a6d1d;
+  --bronze: #6b4f1d;
+  --crimson: #8b1e2b;
+  --crimson-light: #b8323f;
+  --emerald: #2f6e4f;
+  --emerald-light: #3f9467;
+  --cream: #ede6d6;
+  --cream-dim: #b9b0a0;
+  --stone: #4a4458;
+  --red-player: #c43a2f;
+  --blue-player: #3a64c4;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg-0: var(--bg-0);
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-panel: var(--panel);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-crimson: var(--crimson);
+  --color-crimson-light: var(--crimson-light);
+  --color-emerald: var(--emerald);
+  --color-emerald-light: var(--emerald-light);
+  --color-cream: var(--cream);
+  --color-cream-dim: var(--cream-dim);
+  --color-stone: var(--stone);
+  --color-red-player: var(--red-player);
+  --color-blue-player: var(--blue-player);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cinzel), "Times New Roman", serif;
+}
+
+html {
+  background: var(--bg-0);
+}
+
+body {
+  background-color: var(--bg-1);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(139, 30, 43, 0.25), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(47, 110, 79, 0.12), transparent 60%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+  background-attachment: fixed;
+  color: var(--cream);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+::selection {
+  background: rgba(212, 175, 55, 0.35);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 2px;
+}
+
+/* ---------- Typografia ---------- */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+
+.title-gold {
+  font-family: var(--font-display);
+  background: linear-gradient(180deg, #fff3c4 0%, var(--gold-light) 35%, var(--gold) 60%, var(--gold-dark) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6));
+  letter-spacing: 0.05em;
+}
+
+/* ---------- Okno z ramką (jak okna dialogowe w grze) ---------- */
+.frame {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.15)),
+    var(--frame-bg, var(--panel));
+  border: 1px solid #000;
+  box-shadow:
+    0 0 0 1px var(--gold-dark),
+    0 0 0 2px var(--gold),
+    0 0 0 3px #2a200a,
+    0 0 0 5px #3a3346,
+    0 0 0 6px #000,
+    inset 0 0 0 1px rgba(241, 215, 122, 0.15),
+    inset 0 0 24px rgba(0, 0, 0, 0.55),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+}
+
+/* ozdobne narożniki – podmień na grafikę: public/assets/ui/corner.png */
+.frame::before,
+.frame::after,
+.frame > .corner-bl,
+.frame > .corner-br {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: var(--corner-img, url("/assets/ui/corner.svg")) no-repeat center / contain;
+  pointer-events: none;
+  z-index: 1;
+}
+.frame::before {
+  top: -9px;
+  left: -9px;
+}
+.frame::after {
+  top: -9px;
+  right: -9px;
+  transform: scaleX(-1);
+}
+.frame > .corner-bl {
+  bottom: -9px;
+  left: -9px;
+  transform: scaleY(-1);
+}
+.frame > .corner-br {
+  bottom: -9px;
+  right: -9px;
+  transform: scale(-1, -1);
+}
+
+.frame-header {
+  background: linear-gradient(180deg, #3b2a12 0%, #24180a 100%);
+  border-bottom: 1px solid var(--gold-dark);
+  box-shadow: inset 0 1px 0 rgba(241, 215, 122, 0.25), 0 1px 0 #000;
+}
+
+/* tekstura kamienia – użyta punktowo */
+.stone {
+  background-color: #2b2638;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.2) 0 3px, transparent 4px),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.03) 0 2px, transparent 3px),
+    linear-gradient(135deg, #332d42, #241f30);
+  background-size: 37px 41px, 53px 47px, 29px 31px, 100% 100%;
+}
+
+/* ---------- Przyciski w stylu gry ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 1.1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  background: linear-gradient(180deg, #5a4520 0%, #3a2a10 45%, #2a1d08 100%);
+  border: 1px solid #000;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 235, 160, 0.45),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--gold-dark),
+    0 2px 0 #000;
+  text-shadow: 0 1px 0 #000;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: filter 0.12s, transform 0.05s;
+  user-select: none;
+  white-space: nowrap;
+}
+.btn:hover {
+  filter: brightness(1.2);
+}
+.btn:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.6),
+    0 0 0 1px var(--gold-dark);
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  filter: grayscale(0.8) brightness(0.7);
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-primary {
+  color: #fff6d0;
+  background: linear-gradient(180deg, #b8323f 0%, #8b1e2b 50%, #5a1019 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 190, 190, 0.45),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.45),
+    0 0 0 1px var(--gold),
+    0 2px 0 #000;
+}
+.btn-success {
+  color: #eaffef;
+  background: linear-gradient(180deg, #3f9467 0%, #2f6e4f 50%, #1b4430 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(190, 255, 210, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.45),
+    0 0 0 1px var(--gold-dark),
+    0 2px 0 #000;
+}
+.btn-ghost {
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.35);
+  color: var(--cream);
+  text-shadow: none;
+}
+.btn-sm {
+  min-height: 2rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.72rem;
+}
+.btn-icon {
+  min-height: 2.25rem;
+  min-width: 2.25rem;
+  padding: 0.25rem;
+}
+
+/* ---------- Pola formularzy ---------- */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  background: #0e0c16;
+  color: var(--cream);
+  border: 1px solid #000;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.3);
+  padding: 0.55rem 0.75rem;
+  border-radius: 2px;
+  font-size: 0.95rem;
+}
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--gold);
+}
+.label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cream-dim);
+  margin-bottom: 0.35rem;
+}
+
+/* wybór kafelkowy (frakcje, bohaterowie, szablony) */
+.tile {
+  position: relative;
+  background: linear-gradient(180deg, #221d33, #15121f);
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.25);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: box-shadow 0.12s, transform 0.08s, background 0.12s;
+}
+.tile:hover {
+  box-shadow: 0 0 0 1px var(--gold);
+}
+.tile[aria-pressed="true"],
+.tile[aria-checked="true"] {
+  background: linear-gradient(180deg, #4a3712, #2a1d08);
+  box-shadow: 0 0 0 2px var(--gold-light), 0 0 14px rgba(241, 215, 122, 0.35);
+}
+
+/* ---------- Tabele ---------- */
+.table-h3 {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.table-h3 th {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  background: linear-gradient(180deg, #3b2a12, #24180a);
+  border-bottom: 1px solid var(--gold-dark);
+}
+.table-h3 td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+}
+.table-h3 tbody tr:hover td {
+  background: rgba(212, 175, 55, 0.05);
+}
+.table-h3 .num {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Odznaki ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cream-dim);
+  white-space: nowrap;
+}
+.badge-gold {
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--gold-light);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.4);
+}
+.badge-red {
+  background: rgba(139, 30, 43, 0.35);
+  color: #ffb3b8;
+}
+.badge-green {
+  background: rgba(47, 110, 79, 0.35);
+  color: #a6f0c6;
+}
+.badge-blue {
+  background: rgba(58, 100, 196, 0.3);
+  color: #b5c8ff;
+}
+
+/* separator ze złotym ornamentem */
+.divider-ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gold);
+}
+.divider-ornament::before,
+.divider-ornament::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+}
+
+/* markdown */
+.prose-h3 {
+  line-height: 1.7;
+  color: var(--cream);
+}
+.prose-h3 h1,
+.prose-h3 h2,
+.prose-h3 h3 {
+  font-family: var(--font-display);
+  color: var(--gold-light);
+  margin: 1.4em 0 0.6em;
+  line-height: 1.3;
+}
+.prose-h3 h1 {
+  font-size: 1.6rem;
+}
+.prose-h3 h2 {
+  font-size: 1.25rem;
+}
+.prose-h3 h3 {
+  font-size: 1.05rem;
+}
+.prose-h3 > :first-child {
+  margin-top: 0;
+}
+.prose-h3 p,
+.prose-h3 ul,
+.prose-h3 ol {
+  margin: 0.6em 0;
+}
+.prose-h3 ul {
+  list-style: none;
+  padding-left: 1.2em;
+}
+.prose-h3 ul li::before {
+  content: "◆";
+  color: var(--gold);
+  font-size: 0.6em;
+  margin-left: -1.6em;
+  margin-right: 0.9em;
+  vertical-align: 0.2em;
+}
+.prose-h3 ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+}
+.prose-h3 a {
+  color: var(--gold-light);
+  text-decoration: underline;
+}
+.prose-h3 strong {
+  color: #fff3d0;
+}
+.prose-h3 table {
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+.prose-h3 th,
+.prose-h3 td {
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  padding: 0.35em 0.7em;
+}
+.prose-h3 hr {
+  border-color: rgba(212, 175, 55, 0.25);
+  margin: 1.5em 0;
+}
+
+/* przewijanie drabinki */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-color: var(--gold-dark) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

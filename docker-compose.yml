@@ -1,0 +1,34 @@
+# Uruchomienie na zwykłym serwerze z Dockerem (alternatywa dla Pterodactyla):
+#   cp .env.example .env  # uzupełnij wartości
+#   docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: homm3
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zmien-haslo}
+      POSTGRES_DB: homm3
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homm3"]
+      interval: 5s
+      retries: 10
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://homm3:${POSTGRES_PASSWORD:-zmien-haslo}@db:5432/homm3
+      ASSETS_DIR: /data/assets
+    volumes:
+      - assets:/data/assets
+    ports:
+      - "3000:3000"
+volumes:
+  pgdata:
+  assets:
