@@ -88,7 +88,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
               ["Gry W", stats.gamesWon],
               ["Gry P", stats.gamesLost],
             ].map(([k, v]) => (
-              <div key={k} className="stone min-w-24 rounded-sm border border-black px-3 py-2 text-center shadow-[0_0_0_1px_var(--gold-dark)]">
+              <div key={k} className="stone frame-xs min-w-24 px-3 py-2 text-center">
                 <dt className="text-[10px] tracking-widest text-cream-dim uppercase">{k}</dt>
                 <dd className="font-display text-2xl font-bold text-gold-light">{v}</dd>
               </div>

@@ -126,7 +126,7 @@ assets/ui/banner.jpg         baner – w panelu ustaw adres /grafika/ui/banner.j
 - docker compose: wolumen `assets` (montowany w `/data/assets`).
 - Lokalnie: `public/assets/`.
 
-Slugi bohaterów widać w panelu (*Bohaterowie*). Tam też można dodać/wyłączyć bohaterów (np. po aktualizacji HotA). Ozdobne narożniki okien: `public/assets/ui/corner.svg` (zmienna `--corner-img` w `src/app/globals.css`).
+Slugi bohaterów widać w panelu (*Bohaterowie*). Tam też można dodać/wyłączyć bohaterów (np. po aktualizacji HotA). Ramki (oryginalne grafiki 9-slice z gry, `public/assets/ui/frame-*.png`) są warstwami: rama strony `PageFrame` (`.frame` niebieska na stronach publicznych, `.frame-red` w `/konto` i `/admin`) → panele `Frame` (`.frame-sm`) → elementy w panelach (`.frame-xs`). Tła: `public/assets/ui/bg-*.jpg`.
 
 ---
 

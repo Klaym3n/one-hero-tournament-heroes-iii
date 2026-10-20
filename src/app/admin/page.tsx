@@ -37,7 +37,7 @@ export default async function AdminHome() {
       <h1 className="title-gold text-3xl font-black">Pulpit</h1>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {tiles.map(([k, v, href]) => (
-          <Link key={k} href={href} className="stone rounded-sm border border-black p-4 shadow-[0_0_0_1px_var(--gold-dark)] hover:shadow-[0_0_0_1px_var(--gold-light)]">
+          <Link key={k} href={href} className="stone frame-sm p-4 hover:brightness-125">
             <p className="text-[11px] tracking-widest text-cream-dim uppercase">{k}</p>
             <p className={`font-display text-2xl font-bold ${k === "Spory" && Number(v) > 0 ? "text-crimson-light" : "text-gold-light"}`}>{v}</p>
           </Link>

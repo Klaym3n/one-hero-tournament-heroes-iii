@@ -14,7 +14,7 @@ export const NAV = [
 /** Górny pasek w stylu paska zasobów z ekranu przygody. */
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-black bg-[linear-gradient(180deg,#2c2214_0%,#1a130a_100%)] shadow-[0_1px_0_var(--gold-dark),0_2px_0_#000,0_6px_18px_rgba(0,0,0,0.5)]">
+    <header className="leather sticky top-0 z-40 border-b border-black shadow-[0_1px_0_var(--gold-dark),0_2px_0_#000,0_6px_18px_rgba(0,0,0,0.5)]">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
         <Link href="/" className="flex items-center gap-2" aria-label="Strona główna">
           {/* eslint-disable-next-line @next/next/no-img-element */}

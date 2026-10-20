@@ -10,7 +10,7 @@ function Stepper({ label, value, min, max, onChange }: { label: string; value: n
         <button type="button" className="btn btn-sm btn-icon" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label={`${label} −1`}>
           −
         </button>
-        <span className="stone flex h-10 w-10 items-center justify-center rounded-sm border border-black font-display text-xl font-bold text-gold-light shadow-[0_0_0_1px_var(--gold-dark)]" aria-live="polite">
+        <span className="stone frame-xs flex h-10 w-10 items-center justify-center font-display text-xl font-bold text-gold-light" aria-live="polite">
           {value}
         </span>
         <button type="button" className="btn btn-sm btn-icon" onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label={`${label} +1`}>

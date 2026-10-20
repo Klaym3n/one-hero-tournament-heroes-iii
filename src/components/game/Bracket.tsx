@@ -51,8 +51,8 @@ function Card({ m, hovered, onHover }: { m: BracketMatch; hovered: string | null
   return (
     <Link
       href={`/mecze/${m.id}`}
-      className={`block w-52 overflow-hidden rounded-sm border border-black bg-[linear-gradient(180deg,#221d33,#15121f)] transition-shadow ${
-        involved ? "shadow-[0_0_0_2px_var(--gold-light),0_0_14px_rgba(241,215,122,.35)]" : "shadow-[0_0_0_1px_var(--gold-dark)]"
+      className={`frame-xs block w-52 overflow-hidden bg-[linear-gradient(180deg,#2c2016,#160e08)] transition-shadow ${
+        involved ? "shadow-[0_0_0_1px_var(--gold-light),0_0_14px_rgba(241,215,122,.45)]" : ""
       }`}
     >
       <div className="divide-y divide-black/60">
@@ -96,9 +96,7 @@ export function Bracket({ rounds, third }: { rounds: BracketRound[]; third: Brac
           +
         </button>
       </div>
-      <div className="frame" style={{ "--frame-bg": "#14111f" } as React.CSSProperties}>
-        <span className="corner-bl" aria-hidden />
-        <span className="corner-br" aria-hidden />
+      <div className="frame-sm panel" style={{ "--panel-bg": "rgba(10, 7, 4, 0.78)" } as React.CSSProperties}>
         <div className="scroll-x">
         <div style={{ zoom }} className="p-5">
           <div className="flex gap-10">

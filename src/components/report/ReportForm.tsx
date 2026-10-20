@@ -166,9 +166,7 @@ export function ReportForm({ matchId, bestOf, nickA, nickB, mySide, templates, h
 
   return (
     <div className="space-y-6">
-      <div className="frame sticky top-16 z-20" style={{ "--frame-bg": "#1a1424" } as React.CSSProperties}>
-        <span className="corner-bl" aria-hidden />
-        <span className="corner-br" aria-hidden />
+      <div className="frame-sm panel sticky top-16 z-20" style={{ "--panel-bg": "#1c130b" } as React.CSSProperties}>
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <span className="flex min-w-0 items-center gap-2">
             <span className="h-5 w-1 bg-red-player" />
@@ -192,9 +190,7 @@ export function ReportForm({ matchId, bestOf, nickA, nickB, mySide, templates, h
         const done = complete(g);
         const afterDecided = score.decided && i > score.decidedAt;
         return (
-          <section key={i} className={`frame ${afterDecided ? "opacity-60" : ""}`}>
-            <span className="corner-bl" aria-hidden />
-            <span className="corner-br" aria-hidden />
+          <section key={i} className={`frame-sm panel ${afterDecided ? "opacity-60" : ""}`}>
             <button type="button" onClick={() => setOpen(isOpen ? -1 : i)} className="frame-header flex w-full items-center justify-between px-4 py-2.5 text-left" aria-expanded={isOpen}>
               <span className="font-display text-lg font-bold text-gold-light">Gra {i + 1}</span>
               <span className="flex items-center gap-2 text-xs">
@@ -300,9 +296,7 @@ export function ReportForm({ matchId, bestOf, nickA, nickB, mySide, templates, h
         )}
       </div>
 
-      <section className="frame">
-        <span className="corner-bl" aria-hidden />
-        <span className="corner-br" aria-hidden />
+      <section className="frame-sm panel">
         <div className="space-y-4 p-4">
           <div>
             <label className="label" htmlFor="vod">

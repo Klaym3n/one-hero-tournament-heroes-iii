@@ -34,7 +34,7 @@ export function MatchRow({ m, showLabel = true, perspective }: { m: MatchView; s
   return (
     <Link
       href={`/mecze/${m.id}`}
-      className="group block rounded-sm border border-black/60 bg-black/20 px-3 py-2.5 shadow-[0_0_0_1px_rgba(212,175,55,0.12)] hover:shadow-[0_0_0_1px_var(--gold)]"
+      className="group frame-xs block bg-black/30 px-3 py-2.5 hover:brightness-125"
     >
       <div className="flex items-center gap-2 text-sm">
         <span className="h-6 w-1 shrink-0 bg-red-player" aria-hidden />

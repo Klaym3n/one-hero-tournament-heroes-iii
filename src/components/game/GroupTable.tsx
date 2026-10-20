@@ -15,9 +15,7 @@ type Props = {
 export function GroupTable({ name, standings, players, matches, highlight }: Props) {
   const done = matches.filter((m) => m.status === "CONFIRMED" || m.status === "WALKOVER").length;
   return (
-    <section className="frame" aria-label={`Grupa ${name}`}>
-      <span className="corner-bl" aria-hidden />
-      <span className="corner-br" aria-hidden />
+    <section className="frame-sm panel" aria-label={`Grupa ${name}`}>
       <header className="frame-header flex items-center justify-between px-4 py-2">
         <h2 className="font-display text-lg font-black text-gold-light">Grupa {name}</h2>
         <span className="text-xs text-cream-dim">

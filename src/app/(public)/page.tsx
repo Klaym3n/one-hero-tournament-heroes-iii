@@ -36,11 +36,9 @@ export default async function HomePage() {
 
       {/* Baner */}
       <section
-        className="frame overflow-hidden"
+        className="frame-sm panel overflow-hidden"
         style={t.bannerUrl ? { backgroundImage: `linear-gradient(180deg, rgba(12,10,20,.35), rgba(12,10,20,.95)), url(${t.bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
       >
-        <span className="corner-bl" aria-hidden />
-        <span className="corner-br" aria-hidden />
         <div className="relative px-5 py-12 text-center sm:px-10 sm:py-16">
           <div className="relative">
             <span className="badge badge-gold mb-4">{PHASE_LABELS[t.phase]}</span>
@@ -72,7 +70,7 @@ export default async function HomePage() {
                 ["Format", "Bo3 / Bo5"],
                 ["Frakcje", FACTIONS.length],
               ].map(([k, v]) => (
-                <div key={k} className="stone rounded-sm border border-black px-2 py-3 shadow-[0_0_0_1px_var(--gold-dark)]">
+                <div key={k} className="stone frame-xs px-2 py-3">
                   <dt className="text-[11px] tracking-widest text-cream-dim uppercase">{k}</dt>
                   <dd className="font-display text-xl font-bold text-gold-light">{v}</dd>
                 </div>

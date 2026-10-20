@@ -183,46 +183,46 @@ export function AvailabilityCalendar({
       <p className="text-xs text-cream-dim">
         Kliknij lub przeciągnij po polach, aby zaznaczyć godziny, w których możesz grać (czas polski). Gdy Twoja dostępność pokryje się z dostępnością przeciwnika, dostaniecie powiadomienie z propozycją terminu.
       </p>
-      <div ref={scroller} className="frame scroll-x max-h-[70vh] overflow-y-auto" style={{ touchAction: painting ? "none" : "pan-y" }}>
-        <span className="corner-bl" aria-hidden />
-        <span className="corner-br" aria-hidden />
-        <table className="w-full min-w-[640px] border-collapse text-xs select-none" onTouchMove={onTouchMove}>
-          <thead className="sticky top-0 z-10">
-            <tr>
-              <th className="w-14 bg-[#24180a] p-1" />
-              {DAYS.map((_, d) => (
-                <th key={d} className="bg-[#24180a] p-1.5 font-display text-gold-light">
-                  {dayLabel(d)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: SLOTS }, (_, s) => (
-              <tr key={s}>
-                <th className={`pr-2 text-right font-normal text-cream-dim ${s % 2 ? "opacity-0" : ""}`}>{`${String(Math.floor(s / 2)).padStart(2, "0")}:00`}</th>
-                {DAYS.map((_, d) => {
-                  const key = `${d}:${s}`;
-                  const on = cells.has(key);
-                  const past = cellStart(week, d, s) + 30 * 60_000 <= now;
-                  return (
-                    <td
-                      key={key}
-                      data-cell={past ? undefined : key}
-                      onMouseDown={past ? undefined : () => begin(key)}
-                      onMouseEnter={past ? undefined : () => enter(key)}
-                      onTouchStart={past ? undefined : () => begin(key)}
-                      className={`h-5 border-r border-b ${s % 2 ? "border-b-gold/15" : "border-b-black/40"} border-r-black/50 ${
-                        past ? "bg-black/40" : on ? "cursor-pointer bg-emerald-light/80 hover:bg-emerald-light" : "cursor-pointer bg-white/[0.03] hover:bg-gold/20"
-                      }`}
-                      aria-label={`${dayLabel(d)} ${Math.floor(s / 2)}:${s % 2 ? "30" : "00"} ${on ? "dostępny" : "niedostępny"}`}
-                    />
-                  );
-                })}
+      <div className="frame-xs">
+        <div ref={scroller} className="scroll-x max-h-[70vh] overflow-y-auto" style={{ touchAction: painting ? "none" : "pan-y" }}>
+          <table className="w-full min-w-[640px] border-collapse text-xs select-none" onTouchMove={onTouchMove}>
+            <thead className="sticky top-0 z-10">
+              <tr>
+                <th className="w-14 bg-[#24180a] p-1" />
+                {DAYS.map((_, d) => (
+                  <th key={d} className="bg-[#24180a] p-1.5 font-display text-gold-light">
+                    {dayLabel(d)}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {Array.from({ length: SLOTS }, (_, s) => (
+                <tr key={s}>
+                  <th className={`pr-2 text-right font-normal text-cream-dim ${s % 2 ? "opacity-0" : ""}`}>{`${String(Math.floor(s / 2)).padStart(2, "0")}:00`}</th>
+                  {DAYS.map((_, d) => {
+                    const key = `${d}:${s}`;
+                    const on = cells.has(key);
+                    const past = cellStart(week, d, s) + 30 * 60_000 <= now;
+                    return (
+                      <td
+                        key={key}
+                        data-cell={past ? undefined : key}
+                        onMouseDown={past ? undefined : () => begin(key)}
+                        onMouseEnter={past ? undefined : () => enter(key)}
+                        onTouchStart={past ? undefined : () => begin(key)}
+                        className={`h-5 border-r border-b ${s % 2 ? "border-b-gold/15" : "border-b-black/40"} border-r-black/50 ${
+                          past ? "bg-black/40" : on ? "cursor-pointer bg-emerald-light/80 hover:bg-emerald-light" : "cursor-pointer bg-white/[0.03] hover:bg-gold/20"
+                        }`}
+                        aria-label={`${dayLabel(d)} ${Math.floor(s / 2)}:${s % 2 ? "30" : "00"} ${on ? "dostępny" : "niedostępny"}`}
+                      />
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ export function MobileNav({ items }: { items: { href: string; label: string }[] 
         </svg>
       </button>
       {open && (
-        <nav className="absolute inset-x-0 top-14 border-b border-black bg-[#1a130a] shadow-[0_1px_0_var(--gold-dark)]" aria-label="Menu mobilne">
+        <nav className="leather absolute inset-x-0 top-14 border-b border-black shadow-[0_1px_0_var(--gold-dark)]" aria-label="Menu mobilne">
           <ul className="mx-auto flex max-w-6xl flex-col px-4 py-2">
             {[{ href: "/", label: "Start" }, ...items, { href: "/konto", label: "Moje konto" }].map((n) => (
               <li key={n.href}>

@@ -65,7 +65,7 @@ export default async function TournamentInfoPage() {
           <Frame title="Szablony map">
             <ul className="space-y-3">
               {templates.map((m) => (
-                <li key={m.id} className="stone rounded-sm border border-black px-3 py-2 shadow-[0_0_0_1px_var(--gold-dark)]">
+                <li key={m.id} className="stone frame-xs px-3 py-2">
                   <p className="font-display font-bold text-gold-light">{m.name}</p>
                   {m.description && <p className="text-sm text-cream-dim">{m.description}</p>}
                 </li>

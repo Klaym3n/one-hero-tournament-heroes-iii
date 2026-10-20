@@ -7,14 +7,14 @@ export function Avatar({ src, name, size = 32, className = "" }: { src?: string 
         alt=""
         width={size}
         height={size}
-        className={`shrink-0 rounded-sm border border-black shadow-[0_0_0_1px_var(--gold-dark)] ${className}`}
+        className={`shrink-0 frame-xs ${className}`}
       />
     );
   }
   return (
     <span
       style={{ width: size, height: size, fontSize: size * 0.45 }}
-      className={`flex shrink-0 items-center justify-center rounded-sm border border-black bg-[linear-gradient(160deg,var(--crimson),#2a0a10)] font-display font-bold text-gold-light shadow-[0_0_0_1px_var(--gold-dark)] ${className}`}
+      className={`flex shrink-0 items-center justify-center frame-xs bg-[linear-gradient(160deg,var(--crimson),#2a0a10)] font-display font-bold text-gold-light ${className}`}
       aria-hidden
     >
       {name.slice(0, 1).toUpperCase()}

@@ -32,7 +32,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
               <li key={p.id}>
                 <Link
                   href={`/gracze/${p.id}`}
-                  className={`flex items-center gap-3 rounded-sm border border-black/60 bg-black/20 px-3 py-2 shadow-[0_0_0_1px_rgba(212,175,55,0.12)] hover:shadow-[0_0_0_1px_var(--gold)] ${p.status !== "ACTIVE" ? "opacity-50" : ""}`}
+                  className={`flex items-center gap-3 frame-xs bg-black/30 px-3 py-2 hover:brightness-125 ${p.status !== "ACTIVE" ? "opacity-50" : ""}`}
                 >
                   <Avatar src={p.avatarUrl} name={p.nick} size={36} />
                   <span className="min-w-0 flex-1">

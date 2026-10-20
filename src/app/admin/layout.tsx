@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { connection } from "next/server";
 import { pageRequireRole, hasRole } from "@/lib/authz";
-import { Loading } from "@/components/ui/Frame";
+import { Loading, PageFrame } from "@/components/ui/Frame";
 import { ROLE_LABELS } from "@/lib/labels";
 
 export const metadata: Metadata = { title: "Panel administracyjny", robots: { index: false, follow: false } };
@@ -28,9 +28,7 @@ async function Sidebar() {
   const isAdmin = hasRole(user, "ADMIN");
   return (
     <aside className="lg:w-56 lg:shrink-0">
-      <nav className="frame stone p-2" aria-label="Panel">
-        <span className="corner-bl" aria-hidden />
-        <span className="corner-br" aria-hidden />
+      <nav className="frame-sm panel p-2" aria-label="Panel">
         <p className="px-2 pt-1 pb-2 font-display text-xs tracking-widest text-gold-light uppercase">
           Panel · {ROLE_LABELS[user.role]}
         </p>
@@ -56,15 +54,17 @@ async function Guard({ children }: { children: ReactNode }) {
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-6 lg:flex-row">
-      <Suspense fallback={<div className="lg:w-56" />}>
-        <Sidebar />
-      </Suspense>
-      <div className="min-w-0 flex-1">
-        <Suspense fallback={<Loading />}>
-          <Guard>{children}</Guard>
+    <PageFrame variant="red">
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <Suspense fallback={<div className="lg:w-56" />}>
+          <Sidebar />
         </Suspense>
+        <div className="min-w-0 flex-1">
+          <Suspense fallback={<Loading />}>
+            <Guard>{children}</Guard>
+          </Suspense>
+        </div>
       </div>
-    </div>
+    </PageFrame>
   );
 }
