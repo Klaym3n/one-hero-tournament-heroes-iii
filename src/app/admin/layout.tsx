@@ -18,6 +18,7 @@ const LINKS: { href: string; label: string; admin?: boolean }[] = [
   { href: "/admin/szablony", label: "Szablony map", admin: true },
   { href: "/admin/bohaterowie", label: "Bohaterowie", admin: true },
   { href: "/admin/ogloszenia", label: "Ogłoszenia", admin: true },
+  { href: "/admin/partnerzy", label: "Partnerzy", admin: true },
   { href: "/admin/discord", label: "Discord", admin: true },
   { href: "/admin/log", label: "Log akcji" },
 ];

@@ -16,10 +16,13 @@ export function SiteHeader() {
   return (
     <header className="leather sticky top-0 z-40 border-b border-black shadow-[0_1px_0_var(--gold-dark),0_2px_0_#000,0_6px_18px_rgba(0,0,0,0.5)]">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-        <Link href="/" className="flex items-center gap-2" aria-label="Strona główna">
+        <Link href="/" className="flex shrink-0 items-center gap-1" aria-label="One Hero Open – strona główna">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon.svg" alt="" width={28} height={31} />
-          <span className="title-gold text-lg font-black leading-none sm:text-xl">One Hero</span>
+          <img src="/brand/oho-ikona.png" alt="" width={44} height={44} className="-my-1 h-11 w-11" />
+          <span className="title-gold text-lg leading-none font-black sm:text-xl">
+            <span className="lg:hidden">OHO</span>
+            <span className="hidden lg:inline">One Hero Open</span>
+          </span>
         </Link>
         <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Główna nawigacja">
           {NAV.map((n) => (

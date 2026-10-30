@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { deleteAnnouncementAction, deleteTemplateAction, saveAnnouncementAction, saveHeroAction, saveTemplateAction } from "@/server/admin-actions";
+import {
+  deleteAnnouncementAction,
+  deletePartnerAction,
+  deleteTemplateAction,
+  saveAnnouncementAction,
+  saveHeroAction,
+  savePartnerAction,
+  saveTemplateAction,
+} from "@/server/admin-actions";
 import { useAction } from "@/components/ui/useAction";
 import { FeedbackBox } from "@/components/ui/FeedbackBox";
 import { FACTIONS } from "@/data/factions";
@@ -123,6 +131,62 @@ export function AnnouncementEditor({ initial }: { initial: Ann }) {
         )}
       </div>
       <FeedbackBox feedback={feedback} />
+    </div>
+  );
+}
+
+// ---------- Partnerzy ----------
+type PartnerForm = { id?: string; name: string; tier: string; url: string; logoUrl: string; active: boolean; sortOrder: number };
+
+export function PartnerRow({ initial }: { initial: PartnerForm }) {
+  const [v, setV] = useState(initial);
+  const { pending, feedback, exec } = useAction();
+  const isNew = !initial.id;
+  const text = (k: "name" | "tier" | "url" | "logoUrl") => ({
+    value: v[k],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setV({ ...v, [k]: e.target.value }),
+  });
+  return (
+    <div className="flex flex-col gap-3 rounded-sm bg-black/20 p-3 sm:flex-row">
+      <div className="partner-logo frame-xs flex h-20 w-full shrink-0 items-center justify-center p-2 sm:w-36" aria-hidden>
+        {v.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={v.logoUrl} alt="" className="max-h-full max-w-full object-contain" />
+        ) : (
+          <span className="text-center text-[11px] text-cream-dim">brak logo</span>
+        )}
+      </div>
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="grid gap-2 sm:grid-cols-[2fr_1fr_auto_auto]">
+          <input className="input" placeholder="Nazwa partnera" {...text("name")} maxLength={80} />
+          <input className="input" placeholder="Rodzaj (np. Partner medialny)" {...text("tier")} maxLength={60} />
+          <input className="input w-20" type="number" title="Kolejność" value={v.sortOrder} onChange={(e) => setV({ ...v, sortOrder: Number(e.target.value) })} />
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={v.active} onChange={(e) => setV({ ...v, active: e.target.checked })} className="accent-[var(--gold)]" /> widoczny
+          </label>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <input className="input" placeholder="Strona partnera (https://…)" {...text("url")} maxLength={500} />
+          <input className="input" placeholder="Logo: /grafika/partners/nazwa.png lub https://…" {...text("logoUrl")} maxLength={500} />
+        </div>
+        <div className="flex gap-2">
+          <button
+            className="btn btn-sm"
+            disabled={pending || v.name.trim().length < 2}
+            onClick={() =>
+              exec(() => savePartnerAction(v), { onOk: () => isNew && setV({ name: "", tier: "", url: "", logoUrl: "", active: true, sortOrder: v.sortOrder + 1 }) })
+            }
+          >
+            {isNew ? "+ Dodaj partnera" : "Zapisz"}
+          </button>
+          {!isNew && (
+            <button className="btn btn-sm btn-ghost" disabled={pending} onClick={() => exec(() => deletePartnerAction(initial.id!), { confirm: `Usunąć partnera „${initial.name}”?` })}>
+              Usuń
+            </button>
+          )}
+        </div>
+        <FeedbackBox feedback={feedback} />
+      </div>
     </div>
   );
 }

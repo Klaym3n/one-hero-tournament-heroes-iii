@@ -13,7 +13,7 @@ export default async function AdminTemplatesPage() {
     <div className="space-y-6">
       <h1 className="title-gold text-3xl font-black">Szablony map</h1>
       <Frame title="Lista szablonów">
-        <p className="mb-4 text-sm text-cream-dim">Aktywne szablony są do wyboru w raporcie meczowym i widoczne na stronie „Turniej”.</p>
+        <p className="mb-4 text-sm text-cream-dim">Aktywne szablony są do wyboru w raporcie meczowym.</p>
         <div className="space-y-3">
           {templates.map((m) => (
             <TemplateRow key={m.id} initial={{ id: m.id, name: m.name, description: m.description, active: m.active, sortOrder: m.sortOrder }} />

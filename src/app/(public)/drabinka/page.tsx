@@ -33,7 +33,7 @@ export default async function BracketPage() {
   return (
     <div>
       <LiveRefresh topics={["bracket"]} />
-      <PageTitle subtitle="Pojedyncza eliminacja · mecze Bo3 · finał Bo5 · mecz o 3. miejsce">Drabinka turniejowa</PageTitle>
+      <PageTitle>Drabinka turniejowa</PageTitle>
       {champion && (
         <div className="mb-8 text-center">
           <p className="text-sm tracking-widest text-cream-dim uppercase">Zwycięzca turnieju</p>

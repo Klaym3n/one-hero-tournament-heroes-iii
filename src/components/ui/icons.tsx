@@ -25,3 +25,13 @@ export function StreamIcon({ kind, size = 16 }: { kind: "youtube" | "twitch" | "
     </svg>
   );
 }
+
+export function CoffeeIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+      <path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z" />
+      <path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H17" />
+      <path d="M8 2.5v3M11.5 2.5v3" />
+    </svg>
+  );
+}

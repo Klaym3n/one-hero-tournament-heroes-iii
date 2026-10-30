@@ -10,12 +10,13 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"],
 const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin", "latin-ext"], weight: ["600", "700", "900"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "Turniej One Hero – Heroes III", template: "%s · Turniej One Hero" },
-  description: "Turniej 1v1 w Heroes of Might and Magic III: zapisy, grupy, drabinka i wyniki na żywo.",
-  icons: { icon: "/icon.svg" },
+  title: { default: "One Hero Open – Heroes III", template: "%s · One Hero Open" },
+  description: "One Hero Open (OHO) by Turnieje Orzecha – turniej 1v1 w Heroes of Might and Magic III: zapisy, grupy, drabinka i wyniki na żywo.",
+  applicationName: "One Hero Open",
+  openGraph: { siteName: "One Hero Open", locale: "pl_PL", type: "website" },
 };
 
-export const viewport: Viewport = { themeColor: "#12101c", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#16171b", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

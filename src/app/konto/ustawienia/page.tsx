@@ -21,8 +21,8 @@ export default async function SettingsPage() {
     return (
       <Frame className="mx-auto max-w-lg" title="Ustawienia profilu">
         <p className="mb-4">Profil gracza powstaje po zapisie do turnieju.</p>
-        <Link href="/konto/zapis" className="btn btn-primary">
-          Zapisz się
+        <Link href="/konto" className="btn">
+          ← Wróć do konta
         </Link>
       </Frame>
     );

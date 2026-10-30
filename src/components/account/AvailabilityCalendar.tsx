@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TZDate } from "@date-fns/tz";
 import { saveAvailabilityAction } from "@/server/actions";
@@ -72,6 +73,22 @@ export function AvailabilityCalendar({
   const { pending, feedback, exec } = useAction();
   const now = nowMs;
   const [painting, setPainting] = useState(false);
+  const router = useRouter();
+  // przejście do innego tygodnia przy niezapisanych zmianach czeka na decyzję użytkownika
+  const [leaveTo, setLeaveTo] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
+  const guardNav = (e: React.MouseEvent, href: string) => {
+    if (!dirty) return;
+    e.preventDefault();
+    setLeaveTo(href);
+  };
 
   const apply = (key: string, on: boolean) =>
     setCells((prev) => {
@@ -112,7 +129,10 @@ export function AvailabilityCalendar({
   const save = () => {
     const to = new TZDate(week.getFullYear(), week.getMonth(), week.getDate() + 7, 0, 0, TZ);
     exec(() => saveAvailabilityAction(new Date(week.getTime()).toISOString(), new Date(to.getTime()).toISOString(), toIntervals(cells, week)), {
-      onOk: () => setDirty(false),
+      onOk: () => {
+        setDirty(false);
+        if (leaveTo) router.push(leaveTo);
+      },
     });
   };
 
@@ -125,10 +145,13 @@ export function AvailabilityCalendar({
 
   return (
     <div className="space-y-4" onMouseUp={end} onMouseLeave={end} onTouchEnd={end}>
+      <Link href="/konto" onClick={(e) => guardNav(e, "/konto")} className="btn btn-sm btn-ghost">
+        ← Wróć do profilu
+      </Link>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {prevWeek ? (
-            <Link href={`/konto/dostepnosc?w=${prevWeek}`} className="btn btn-sm btn-icon" aria-label="Poprzedni tydzień">
+            <Link href={`/konto/dostepnosc?w=${prevWeek}`} onClick={(e) => guardNav(e, `/konto/dostepnosc?w=${prevWeek}`)} className="btn btn-sm btn-icon" aria-label="Poprzedni tydzień">
               ‹
             </Link>
           ) : (
@@ -140,7 +163,7 @@ export function AvailabilityCalendar({
             {dayLabel(0)} – {dayLabel(6)}
           </span>
           {nextWeek ? (
-            <Link href={`/konto/dostepnosc?w=${nextWeek}`} className="btn btn-sm btn-icon" aria-label="Następny tydzień">
+            <Link href={`/konto/dostepnosc?w=${nextWeek}`} onClick={(e) => guardNav(e, `/konto/dostepnosc?w=${nextWeek}`)} className="btn btn-sm btn-icon" aria-label="Następny tydzień">
               ›
             </Link>
           ) : (
@@ -179,6 +202,25 @@ export function AvailabilityCalendar({
           </button>
         </div>
       </div>
+      {leaveTo && dirty && (
+        <div className="frame-xs space-y-3 bg-crimson/25 p-3" role="alertdialog" aria-labelledby="unsaved-title">
+          <p id="unsaved-title" className="text-sm">
+            <strong className="text-gold-light">Dostępność w tym tygodniu nie została zapisana.</strong> Czy na pewno chcesz przejść dalej? Niezapisane
+            zaznaczenia zostaną utracone.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn btn-sm btn-success" disabled={pending} onClick={save}>
+              Zapisz i przejdź
+            </button>
+            <button type="button" className="btn btn-sm btn-primary" disabled={pending} onClick={() => router.push(leaveTo)}>
+              Przejdź bez zapisywania
+            </button>
+            <button type="button" className="btn btn-sm btn-ghost" onClick={() => setLeaveTo(null)}>
+              Zostań
+            </button>
+          </div>
+        </div>
+      )}
       <FeedbackBox feedback={feedback} />
       <p className="text-xs text-cream-dim">
         Kliknij lub przeciągnij po polach, aby zaznaczyć godziny, w których możesz grać (czas polski). Gdy Twoja dostępność pokryje się z dostępnością przeciwnika, dostaniecie powiadomienie z propozycją terminu.

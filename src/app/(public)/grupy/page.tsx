@@ -36,7 +36,7 @@ export default async function GroupsPage() {
   return (
     <div>
       <LiveRefresh topics={["groups", "players"]} />
-      <PageTitle subtitle="Każdy z każdym, mecze Bo3. Awans: 2 najlepsze osoby z każdej grupy. Tabele aktualizują się na żywo.">Faza grupowa</PageTitle>
+      <PageTitle>Faza grupowa</PageTitle>
       <div className="grid gap-8 md:grid-cols-2">
         {data.map((d) => (
           <GroupTable
@@ -50,6 +50,8 @@ export default async function GroupsPage() {
         ))}
       </div>
       <p className="mt-6 text-center text-xs text-cream-dim">
+        Każdy z każdym, mecze Bo{t.groupBestOf}. Awans: 2 najlepsze osoby z każdej grupy.
+        <br />
         Kolejność: punkty (wygrane mecze) → bilans gier → mała tabela (mecze bezpośrednie) → decyzja organizatora.
       </p>
     </div>

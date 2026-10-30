@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Frame, PageTitle } from "@/components/ui/Frame";
 import { Markdown } from "@/components/ui/Markdown";
-import { getTemplates, getTournament } from "@/lib/tournament/current";
-import { FACTIONS } from "@/data/factions";
-import { FactionIcon } from "@/components/game/FactionIcon";
-import { getAssetManifest } from "@/lib/assets";
+import { getTournament } from "@/lib/tournament/current";
 import { LiveRefresh } from "@/components/LiveRefresh";
 
 export const metadata: Metadata = { title: "Informacje o turnieju" };
@@ -13,7 +10,6 @@ export const metadata: Metadata = { title: "Informacje o turnieju" };
 export default async function TournamentInfoPage() {
   await connection();
   const t = await getTournament();
-  const [templates, assets] = await Promise.all([getTemplates(t.id, true), getAssetManifest()]);
   const s = t.gameSettings;
   const settings = [
     ["Poziom trudności", s.difficulty],
@@ -62,26 +58,6 @@ export default async function TournamentInfoPage() {
               <Markdown>{t.prizesMd}</Markdown>
             </Frame>
           )}
-          <Frame title="Szablony map">
-            <ul className="space-y-3">
-              {templates.map((m) => (
-                <li key={m.id} className="stone frame-xs px-3 py-2">
-                  <p className="font-display font-bold text-gold-light">{m.name}</p>
-                  {m.description && <p className="text-sm text-cream-dim">{m.description}</p>}
-                </li>
-              ))}
-            </ul>
-          </Frame>
-          <Frame title="Frakcje">
-            <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-3">
-              {FACTIONS.map((f) => (
-                <li key={f.slug} className="flex flex-col items-center gap-1 text-center text-xs">
-                  <FactionIcon slug={f.slug} hasImage={assets.factions.includes(`${f.slug}.png`)} size={40} />
-                  <span>{f.name}</span>
-                </li>
-              ))}
-            </ul>
-          </Frame>
         </div>
       </div>
     </div>

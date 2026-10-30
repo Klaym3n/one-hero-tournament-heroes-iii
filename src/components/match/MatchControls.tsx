@@ -46,18 +46,56 @@ export function ConfirmReport({ reportId, score }: { reportId: string; score: st
   );
 }
 
+/** "2026-11-07T18:15" → "07.11.2026, 18:15" */
+function fmtLocal(v: string) {
+  const [d, time] = v.split("T");
+  const [y, m, day] = d.split("-");
+  return `${day}.${m}.${y}, ${time?.slice(0, 5)}`;
+}
+
+/** Drugi krok zapisu terminu: gracz potwierdza, że termin pasuje obu stronom. */
+function ConfirmSchedule({ label, pending, onConfirm, onCancel }: { label: string; pending: boolean; onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div className="frame-xs space-y-3 bg-black/30 p-3" role="alertdialog" aria-labelledby="confirm-schedule">
+      <p id="confirm-schedule" className="text-sm">
+        Termin meczu <strong className="font-display text-gold-light">{label}</strong> (czas polski) zostanie zapisany i będzie widoczny publicznie. Czy potwierdzasz, że
+        ten termin na pewno odpowiada <strong>obydwu zawodnikom</strong>?
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button className="btn btn-sm btn-success" disabled={pending} onClick={onConfirm}>
+          ✔ Tak, termin pasuje obu – zapisz
+        </button>
+        <button className="btn btn-sm btn-ghost" disabled={pending} onClick={onCancel}>
+          Anuluj
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** Ustalanie planowanej daty startu meczu (czas polski). */
 export function ScheduleForm({ matchId, current }: { matchId: string; current: string | null }) {
   const { pending, feedback, exec } = useAction();
   const [value, setValue] = useState(current ?? "");
+  const [confirming, setConfirming] = useState(false);
   return (
     <div className="space-y-2">
       <label className="label" htmlFor="sched">
         Planowany start (czas polski)
       </label>
       <div className="flex flex-wrap gap-2">
-        <input id="sched" type="datetime-local" className="input max-w-60" value={value} step={900} onChange={(e) => setValue(e.target.value)} />
-        <button className="btn" disabled={pending || !value} onClick={() => exec(() => setScheduleAction(matchId, value))}>
+        <input
+          id="sched"
+          type="datetime-local"
+          className="input max-w-60"
+          value={value}
+          step={900}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setConfirming(false);
+          }}
+        />
+        <button className="btn" disabled={pending || !value || value === current || confirming} onClick={() => setConfirming(true)}>
           Zapisz termin
         </button>
         {current && (
@@ -66,6 +104,14 @@ export function ScheduleForm({ matchId, current }: { matchId: string; current: s
           </button>
         )}
       </div>
+      {confirming && value && (
+        <ConfirmSchedule
+          label={fmtLocal(value)}
+          pending={pending}
+          onConfirm={() => exec(() => setScheduleAction(matchId, value), { onOk: () => setConfirming(false) })}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
       <FeedbackBox feedback={feedback} />
     </div>
   );
@@ -73,15 +119,21 @@ export function ScheduleForm({ matchId, current }: { matchId: string; current: s
 
 export function ProposalButton({ matchId, startsAt, label }: { matchId: string; startsAt: string; label: string }) {
   const { pending, feedback, exec } = useAction();
+  const [confirming, setConfirming] = useState(false);
   return (
     <div className="flex flex-col gap-1">
-      <button
-        className="btn btn-sm btn-success"
-        disabled={pending}
-        onClick={() => exec(() => setScheduleFromProposalAction(matchId, startsAt), { confirm: `Ustawić termin meczu: ${label}?` })}
-      >
-        Ustaw ten termin
-      </button>
+      {confirming ? (
+        <ConfirmSchedule
+          label={label}
+          pending={pending}
+          onConfirm={() => exec(() => setScheduleFromProposalAction(matchId, startsAt), { onOk: () => setConfirming(false) })}
+          onCancel={() => setConfirming(false)}
+        />
+      ) : (
+        <button className="btn btn-sm btn-success" disabled={pending} onClick={() => setConfirming(true)}>
+          Ustaw ten termin
+        </button>
+      )}
       <FeedbackBox feedback={feedback} />
     </div>
   );

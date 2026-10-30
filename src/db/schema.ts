@@ -397,6 +397,26 @@ export const announcements = pgTable("announcements", {
   createdAt: createdAt(),
 });
 
+// Partnerzy turnieju – sekcja na dole strony głównej
+export const partners = pgTable(
+  "partners",
+  {
+    id: id(),
+    tournamentId: uuid("tournament_id")
+      .notNull()
+      .references(() => tournaments.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    // np. "Partner główny", "Partner medialny"
+    tier: text("tier").notNull().default(""),
+    url: text("url"),
+    logoUrl: text("logo_url"),
+    active: boolean("active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index("partners_tournament_idx").on(t.tournamentId, t.sortOrder)],
+);
+
 export const adminAuditLog = pgTable(
   "admin_audit_log",
   {
@@ -472,5 +492,6 @@ export type Participant = typeof participants.$inferSelect;
 export type Match = typeof matches.$inferSelect;
 export type MapTemplate = typeof mapTemplates.$inferSelect;
 export type Hero = typeof heroes.$inferSelect;
+export type Partner = typeof partners.$inferSelect;
 export type Role = (typeof roleEnum.enumValues)[number];
 export type Phase = (typeof phaseEnum.enumValues)[number];

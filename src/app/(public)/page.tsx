@@ -4,24 +4,21 @@ import { Frame, Empty } from "@/components/ui/Frame";
 import { Markdown } from "@/components/ui/Markdown";
 import { MatchRow } from "@/components/game/MatchRow";
 import { LiveRefresh } from "@/components/LiveRefresh";
-import { getTournament } from "@/lib/tournament/current";
+import { getPartners, getTournament } from "@/lib/tournament/current";
+import { PartnersSection } from "@/components/layout/PartnersSection";
 import { getSessionUser } from "@/lib/auth/session";
-import { countPlayers, getAnnouncements, getParticipantByUser, recentResults, upcomingScheduled } from "@/server/queries";
+import { getAnnouncements, getParticipantByUser, recentResults, upcomingScheduled } from "@/server/queries";
 import { PHASE_LABELS, fmtDate } from "@/lib/labels";
-import { FACTIONS } from "@/data/factions";
-import { FactionIcon } from "@/components/game/FactionIcon";
-import { getAssetManifest } from "@/lib/assets";
 
 export default async function HomePage() {
   await connection();
   const t = await getTournament();
-  const [user, players, news, upcoming, results, assets] = await Promise.all([
+  const [user, news, upcoming, results, partners] = await Promise.all([
     getSessionUser(),
-    countPlayers(t.id),
     getAnnouncements(t.id, 5),
     upcomingScheduled(t.id),
     recentResults(t.id),
-    getAssetManifest(),
+    getPartners(t.id),
   ]);
   const me = user ? await getParticipantByUser(t.id, user.id) : null;
   const registered = me?.status === "ACTIVE";
@@ -34,22 +31,19 @@ export default async function HomePage() {
     <div className="space-y-10">
       <LiveRefresh topics={["content", "matches", "players"]} />
 
-      {/* Baner */}
+      {/* Baner – logo One Hero Open (public/brand) na tle panelu albo na własnym banerze z panelu */}
       <section
         className="frame-sm panel overflow-hidden"
         style={t.bannerUrl ? { backgroundImage: `linear-gradient(180deg, rgba(12,10,20,.35), rgba(12,10,20,.95)), url(${t.bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
       >
-        <div className="relative px-5 py-12 text-center sm:px-10 sm:py-16">
+        <div className="relative px-3 py-6 text-center sm:px-6 sm:py-8">
           <div className="relative">
             <span className="badge badge-gold mb-4">{PHASE_LABELS[t.phase]}</span>
-            <h1 className="title-gold text-4xl leading-tight font-black sm:text-6xl">{t.name}</h1>
-            <div className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-2 opacity-80" aria-hidden>
-              {FACTIONS.map((f) => (
-                <FactionIcon key={f.slug} slug={f.slug} hasImage={assets.factions.includes(`${f.slug}.png`)} size={30} title={false} />
-              ))}
-            </div>
-            {t.tagline && <p className="mx-auto mt-4 max-w-2xl text-lg text-cream">{t.tagline}</p>}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <h1>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/oho-logo-pelne.png" alt={t.name} width={2048} height={1697} className="mx-auto h-auto w-full max-w-[42rem] drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]" />
+            </h1>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               {cta && (
                 <Link href={cta.href} className="btn btn-primary px-6 text-base">
                   {cta.label}
@@ -64,18 +58,6 @@ export default async function HomePage() {
                 </Link>
               )}
             </div>
-            <dl className="mx-auto mt-10 grid max-w-lg grid-cols-3 gap-3 text-center">
-              {[
-                ["Graczy", players],
-                ["Format", "Bo3 / Bo5"],
-                ["Frakcje", FACTIONS.length],
-              ].map(([k, v]) => (
-                <div key={k} className="stone frame-xs px-2 py-3">
-                  <dt className="text-[11px] tracking-widest text-cream-dim uppercase">{k}</dt>
-                  <dd className="font-display text-xl font-bold text-gold-light">{v}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
         </div>
       </section>
@@ -110,6 +92,8 @@ export default async function HomePage() {
           </Frame>
         </div>
       </div>
+
+      <PartnersSection partners={partners} invite={process.env.DISCORD_INVITE_URL} />
     </div>
   );
 }

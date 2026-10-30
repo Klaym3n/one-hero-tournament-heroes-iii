@@ -81,19 +81,6 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
               </div>
             )}
           </div>
-          <dl className="grid w-full grid-cols-2 gap-2 sm:w-auto">
-            {[
-              ["Mecze W", stats.wins],
-              ["Mecze P", stats.losses],
-              ["Gry W", stats.gamesWon],
-              ["Gry P", stats.gamesLost],
-            ].map(([k, v]) => (
-              <div key={k} className="stone frame-xs min-w-24 px-3 py-2 text-center">
-                <dt className="text-[10px] tracking-widest text-cream-dim uppercase">{k}</dt>
-                <dd className="font-display text-2xl font-bold text-gold-light">{v}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </Frame>
 

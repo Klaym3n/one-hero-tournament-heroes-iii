@@ -1,12 +1,12 @@
 // Domyślne treści nowego turnieju – do edycji w panelu administracyjnym.
 
 export const DEFAULT_TOURNAMENT = {
-  name: "Turniej One Hero – Heroes III",
+  name: "One Hero Open",
   slug: "one-hero",
   tagline: "Jeden bohater. Jedna szansa. Dołącz do turnieju 1v1 w Heroes of Might and Magic III: Horn of the Abyss.",
   infoMd: `## O turnieju
 
-Turniej 1v1 w formacie **One Hero** – każdy gracz prowadzi rozgrywkę jednym bohaterem.
+**One Hero Open (OHO)** to turniej 1v1 w formacie **One Hero** – każdy gracz prowadzi rozgrywkę jednym bohaterem. Organizatorem są **Turnieje Orzecha (TO)**.
 
 - Wersja gry: **Horn of the Abyss** (aktualna wersja w lobby).
 - Rozgrywki online w lobby HotA.
@@ -32,7 +32,7 @@ O kolejności w grupie decydują kolejno: liczba wygranych meczów, bilans gier,
   rulesMd: `# Regulamin turnieju
 
 ## §1. Postanowienia ogólne
-1. Organizatorem turnieju jest administracja serwisu.
+1. Organizatorem turnieju One Hero Open (OHO) są Turnieje Orzecha (TO).
 2. Udział w turnieju jest dobrowolny i bezpłatny.
 3. Zapis do turnieju oznacza akceptację niniejszego regulaminu.
 

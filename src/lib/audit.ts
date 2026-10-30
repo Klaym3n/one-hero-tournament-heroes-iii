@@ -23,6 +23,7 @@ export const ACTION_LABELS: Record<string, string> = {
   TEMPLATE_UPDATE: "Zmiana szablonów map",
   HERO_UPDATE: "Zmiana listy bohaterów",
   ANNOUNCEMENT: "Ogłoszenie",
+  PARTNER_UPDATE: "Zmiana partnerów turnieju",
   ROUND_PING: "Powiadomienie Discord o rundzie",
   SCHEDULE_SET: "Ustawienie terminu meczu",
 };

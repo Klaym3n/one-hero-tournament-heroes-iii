@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getSessionUser } from "@/lib/auth/session";
 import { hasRole } from "@/lib/authz";
-import { unreadCount } from "@/server/queries";
+import { getTournament } from "@/lib/tournament/current";
+import { getParticipantByUser, unreadCount } from "@/server/queries";
 import { Avatar } from "@/components/ui/Avatar";
 
 export async function UserMenu() {
@@ -13,10 +14,25 @@ export async function UserMenu() {
       </Link>
     );
   }
-  const unread = await unreadCount(user.id);
+  const t = await getTournament();
+  const [unread, me] = await Promise.all([unreadCount(user.id), t.phase === "REGISTRATION_OPEN" ? getParticipantByUser(t.id, user.id) : null]);
   const name = user.discordGlobalName ?? user.discordUsername;
   return (
     <div className="flex items-center gap-2">
+      {/* w trakcie zapisów: status zapisu albo zachęta do zapisania się */}
+      {t.phase === "REGISTRATION_OPEN" &&
+        (me?.status === "ACTIVE" ? (
+          <span className="flex items-center gap-1 text-sm font-semibold text-emerald-light" title="Jesteś zapisany(-a) do turnieju">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden>
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </svg>
+            <span className="hidden sm:inline">Zapisany(-a)</span>
+          </span>
+        ) : me?.status !== "BANNED" ? (
+          <Link href="/konto/zapis" className="btn btn-sm btn-primary">
+            Zapisz się
+          </Link>
+        ) : null)}
       {hasRole(user, "MODERATOR") && (
         <Link href="/admin" className="btn btn-sm btn-ghost hidden sm:inline-flex">
           Panel

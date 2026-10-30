@@ -21,6 +21,7 @@ export default async function AccountPage() {
   const [matches, notes] = await Promise.all([me ? getMyMatches(me.id) : null, getNotifications(user.id, 20)]);
   const name = user.discordGlobalName ?? user.discordUsername;
   const registered = me?.status === "ACTIVE";
+  const canRegister = t.phase === "REGISTRATION_OPEN" && !registered && me?.status !== "BANNED";
 
   return (
     <div className="space-y-8">
@@ -35,14 +36,21 @@ export default async function AccountPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {canRegister && (
+              <Link href="/konto/zapis" className="btn btn-sm btn-primary">
+                Zapisz się do turnieju
+              </Link>
+            )}
             {me && (
               <Link href={`/gracze/${me.id}`} className="btn btn-sm btn-ghost">
                 Profil publiczny
               </Link>
             )}
-            <Link href="/konto/ustawienia" className="btn btn-sm">
-              Ustawienia
-            </Link>
+            {me && (
+              <Link href="/konto/ustawienia" className="btn btn-sm">
+                Ustawienia
+              </Link>
+            )}
             <Link href="/konto/dostepnosc" className="btn btn-sm">
               Dostępność
             </Link>
@@ -56,12 +64,10 @@ export default async function AccountPage() {
       {!registered && (
         <Frame title="Zapis do turnieju">
           {t.phase === "REGISTRATION_OPEN" ? (
-            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p>{me?.status === "WITHDRAWN" ? "Wypisałeś(-aś) się z turnieju. Możesz zapisać się ponownie." : "Nie jesteś jeszcze zapisany(-a) do turnieju."}</p>
-              <Link href="/konto/zapis" className="btn btn-primary">
-                Zapisz się
-              </Link>
-            </div>
+            <p>
+              {me?.status === "WITHDRAWN" ? "Wypisałeś(-aś) się z turnieju. Możesz zapisać się ponownie" : "Nie jesteś jeszcze zapisany(-a) do turnieju. Zapisz się"}{" "}
+              przyciskiem „Zapisz się do turnieju” powyżej.
+            </p>
           ) : me?.status === "BANNED" ? (
             <p>Twoje konto zostało wykluczone z turnieju.</p>
           ) : (

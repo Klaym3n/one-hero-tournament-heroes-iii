@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { heroes, mapTemplates, tournaments, type Tournament } from "@/db/schema";
+import { heroes, mapTemplates, partners, tournaments, type Tournament } from "@/db/schema";
 import { defaultHeroSeeds } from "@/data/factions";
 import { DEFAULT_TEMPLATES, DEFAULT_TOURNAMENT } from "./defaults";
 
@@ -31,6 +31,15 @@ export const getTemplates = cache(async (tournamentId: string, onlyActive = true
     .from(mapTemplates)
     .where(eq(mapTemplates.tournamentId, tournamentId))
     .orderBy(asc(mapTemplates.sortOrder), asc(mapTemplates.name));
+  return onlyActive ? rows.filter((r) => r.active) : rows;
+});
+
+export const getPartners = cache(async (tournamentId: string, onlyActive = true) => {
+  const rows = await db
+    .select()
+    .from(partners)
+    .where(eq(partners.tournamentId, tournamentId))
+    .orderBy(asc(partners.sortOrder), asc(partners.createdAt));
   return onlyActive ? rows.filter((r) => r.active) : rows;
 });
 

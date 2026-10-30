@@ -56,6 +56,13 @@ export async function generateBracketAction(force: boolean) {
   }, "Drabinka wygenerowana.");
 }
 
+export async function previewRoundPingAction(label: string) {
+  return run(async () => {
+    const admin = await requireRole("ADMIN");
+    return T.previewRoundPing(admin, z.string().max(100).parse(label));
+  });
+}
+
 export async function pingRoundAction(label: string) {
   return run(async () => {
     const admin = await requireRole("ADMIN");
@@ -100,16 +107,19 @@ export async function restoreParticipantAction(participantId: string) {
 
 // ---------- Konfiguracja (Administrator) ----------
 const bo = z.union([z.literal(1), z.literal(3), z.literal(5), z.literal(7)]);
+/** Adres grafiki: https albo plik z public/assets, public/brand lub ASSETS_DIR (/grafika/…); pusty → null. */
+const imageUrl = (message: string) =>
+  z
+    .string()
+    .trim()
+    .max(500)
+    .refine((v) => v === "" || /^(https:\/\/[^\s"'()<>]+|\/(assets|brand|grafika)\/[\w-]+(\/[\w-]+)*\.(png|jpg|jpeg|webp|gif|svg))$/.test(v), message)
+    .transform((v) => v || null);
 const configSchema = z
   .object({
     name: z.string().trim().min(3).max(120),
     tagline: z.string().max(300),
-    bannerUrl: z
-      .string()
-      .trim()
-      .max(500)
-      .refine((v) => v === "" || /^(https:\/\/[^\s"'()<>]+|\/(assets|grafika)\/[\w-]+(\/[\w-]+)*\.(png|jpg|jpeg|webp|gif|svg))$/.test(v), "Nieprawidłowy adres baneru")
-      .transform((v) => v || null),
+    bannerUrl: imageUrl("Nieprawidłowy adres baneru"),
     infoMd: z.string().max(20_000),
     rulesMd: z.string().max(50_000),
     privacyMd: z.string().max(50_000),
@@ -186,6 +196,39 @@ export async function deleteAnnouncementAction(id: string) {
     await C.deleteAnnouncement(admin, uuid.parse(id));
     refresh();
   }, "Usunięto ogłoszenie.");
+}
+
+export async function savePartnerAction(input: { id?: string; name: string; tier: string; url: string; logoUrl: string; active: boolean; sortOrder: number }) {
+  return run(async () => {
+    const admin = await requireRole("ADMIN");
+    const parsed = z
+      .object({
+        id: uuid.optional(),
+        name: z.string().max(80),
+        tier: z.string().max(60),
+        url: z
+          .string()
+          .trim()
+          .max(500)
+          .refine((v) => v === "" || /^https?:\/\/[^\s"'<>]+$/.test(v), "Nieprawidłowy adres strony partnera")
+          .transform((v) => v || null),
+        logoUrl: imageUrl("Nieprawidłowy adres logo"),
+        active: z.boolean(),
+        sortOrder: z.number().int(),
+      })
+      .safeParse(input);
+    if (!parsed.success) throw new ServiceError(parsed.error.issues[0]?.message ?? "Nieprawidłowe dane.");
+    await C.savePartner(admin, parsed.data);
+    refresh();
+  }, "Zapisano partnera.");
+}
+
+export async function deletePartnerAction(id: string) {
+  return run(async () => {
+    const admin = await requireRole("ADMIN");
+    await C.deletePartner(admin, uuid.parse(id));
+    refresh();
+  }, "Usunięto partnera.");
 }
 
 export async function retryOutboxAction(id: string) {

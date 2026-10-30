@@ -1,7 +1,7 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { announcements, heroes, mapTemplates } from "@/db/schema";
+import { announcements, heroes, mapTemplates, partners } from "@/db/schema";
 import { getTournament } from "@/lib/tournament/current";
 import { heroSlug, isFactionSlug } from "@/data/factions";
 import { logAction } from "@/lib/audit";
@@ -75,5 +75,32 @@ export async function deleteAnnouncement(admin: SessionUser, id: string) {
   assertAdmin(admin);
   await db.delete(announcements).where(eq(announcements.id, id));
   await logAction(admin.id, "ANNOUNCEMENT", { entityType: "announcement", entityId: id, payload: { deleted: true } });
+  await publish(["content"]);
+}
+
+// ---------- Partnerzy ----------
+export async function savePartner(
+  admin: SessionUser,
+  input: { id?: string; name: string; tier: string; url: string | null; logoUrl: string | null; active: boolean; sortOrder: number },
+) {
+  assertAdmin(admin);
+  const name = input.name.trim();
+  if (name.length < 2 || name.length > 80) throw new ServiceError("Nazwa partnera: 2–80 znaków.");
+  const t = await getTournament();
+  const values = { name, tier: input.tier.trim().slice(0, 60), url: input.url, logoUrl: input.logoUrl, active: input.active, sortOrder: input.sortOrder | 0 };
+  if (input.id) {
+    await db.update(partners).set(values).where(and(eq(partners.id, input.id), eq(partners.tournamentId, t.id)));
+  } else {
+    await db.insert(partners).values({ ...values, tournamentId: t.id });
+  }
+  await logAction(admin.id, "PARTNER_UPDATE", { entityType: "partner", entityId: input.id, payload: values });
+  await publish(["content"]);
+}
+
+export async function deletePartner(admin: SessionUser, id: string) {
+  assertAdmin(admin);
+  const t = await getTournament();
+  await db.delete(partners).where(and(eq(partners.id, id), eq(partners.tournamentId, t.id)));
+  await logAction(admin.id, "PARTNER_UPDATE", { entityType: "partner", entityId: id, payload: { deleted: true } });
   await publish(["content"]);
 }

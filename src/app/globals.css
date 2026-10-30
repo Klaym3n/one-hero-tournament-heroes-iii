@@ -455,3 +455,17 @@ body {
     animation: none !important;
   }
 }
+
+/* ---------- Partnerzy (strona główna) ----------
+   miejsce na logo partnera – jasne logo na ciemnym tle (kolory pakietu logo OHO) */
+.partner-logo {
+  background: linear-gradient(180deg, #1d1e23, #121316);
+  background-clip: padding-box;
+}
+a.partner-card:hover .partner-logo {
+  box-shadow: 0 0 0 1px var(--gold-light), 0 0 14px rgba(224, 177, 74, 0.35);
+}
+.partner-placeholder {
+  border: 1px dashed rgba(224, 177, 74, 0.35);
+  background: rgba(0, 0, 0, 0.2);
+}

@@ -42,3 +42,7 @@ next-env.d.ts
 
 .pgdata/
 !.env.example
+
+# other files
+
+/design-assets/

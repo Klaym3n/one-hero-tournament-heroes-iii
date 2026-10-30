@@ -23,7 +23,7 @@ import { publish } from "@/lib/realtime";
 import { notifyUsers, queueChannelMessage } from "@/lib/notify";
 import { decrypt } from "@/lib/crypto";
 import { env } from "@/lib/env";
-import { addGuildMember, createInvite, isGuildMember } from "@/lib/discord/api";
+import { addGuildMember, createInvite, isGuildMember, splitMessage } from "@/lib/discord/api";
 import { PHASE_LABELS } from "@/lib/labels";
 import type { SessionUser } from "@/lib/auth/session";
 import { hasRole } from "@/lib/authz";
@@ -383,10 +383,11 @@ export async function generateBracket(admin: SessionUser, force = false) {
 // Powiadomienie o rundzie (Discord)
 // ---------------------------------------------------------------------------
 
-export async function pingCurrentRound(admin: SessionUser, customLabel?: string) {
-  assertAdmin(admin);
-  const t = await getTournament();
-  if (!env().DISCORD_CHANNEL_ID) throw new ServiceError("Nie skonfigurowano kanału Discord (DISCORD_CHANNEL_ID).");
+/**
+ * Treść ogłoszenia rundy. `content` idzie na Discord (oznaczenia <@id>),
+ * `preview` to ta sama wiadomość z oznaczeniami jako @nick – do podglądu w panelu.
+ */
+async function buildRoundMessage(t: Tournament, customLabel?: string) {
   const open = await db
     .select({ id: matches.id, a: matches.playerAId, b: matches.playerBId, stage: matches.stage, round: matches.round, scheduledAt: matches.scheduledAt })
     .from(matches)
@@ -399,21 +400,37 @@ export async function pingCurrentRound(admin: SessionUser, customLabel?: string)
     .innerJoin(users, eq(users.id, participants.userId))
     .where(inArray(participants.id, pids));
   const by = new Map(rows.map((r) => [r.id, r]));
-  const tag = (pid: string | null) => {
+  const tag = (pid: string | null, forPreview: boolean) => {
     const r = pid ? by.get(pid) : undefined;
     if (!r) return "?";
+    if (forPreview) return `@${r.nick}`;
     return /^\d+$/.test(r.discordId) ? `<@${r.discordId}>` : r.nick;
   };
   const label = customLabel?.trim() || t.currentRoundLabel || PHASE_LABELS[t.phase];
-  const lines = [
-    `⚔️ **${t.name} – ${label}**`,
-    `Poniżsi gracze mają mecze do rozegrania. Umówcie termin i zgłoście wynik: ${env().APP_URL}/konto`,
-    "",
-    ...open.map((m) => `• ${tag(m.a)} vs ${tag(m.b)} – ${env().APP_URL}/mecze/${m.id}`),
-  ];
-  const parts = await queueChannelMessage(lines.join("\n"));
-  await logAction(admin.id, "ROUND_PING", { entityType: "tournament", entityId: t.id, payload: { matches: open.length, label, parts } });
-  return { matches: open.length, parts };
+  const text = (forPreview: boolean) =>
+    [
+      `⚔️ **${t.name} – ${label}**`,
+      `Poniżsi gracze mają mecze do rozegrania. Umówcie termin i zgłoście wynik: ${env().APP_URL}/konto`,
+      "",
+      ...open.map((m) => `• ${tag(m.a, forPreview)} vs ${tag(m.b, forPreview)} – ${env().APP_URL}/mecze/${m.id}`),
+    ].join("\n");
+  return { content: text(false), preview: text(true), label, matches: open.length };
+}
+
+export async function previewRoundPing(admin: SessionUser, customLabel?: string) {
+  assertAdmin(admin);
+  const msg = await buildRoundMessage(await getTournament(), customLabel);
+  return { preview: msg.preview, matches: msg.matches, parts: splitMessage(msg.content).length };
+}
+
+export async function pingCurrentRound(admin: SessionUser, customLabel?: string) {
+  assertAdmin(admin);
+  const t = await getTournament();
+  if (!env().DISCORD_CHANNEL_ID) throw new ServiceError("Nie skonfigurowano kanału Discord (DISCORD_CHANNEL_ID).");
+  const msg = await buildRoundMessage(t, customLabel);
+  const parts = await queueChannelMessage(msg.content);
+  await logAction(admin.id, "ROUND_PING", { entityType: "tournament", entityId: t.id, payload: { matches: msg.matches, label: msg.label, parts } });
+  return { matches: msg.matches, parts };
 }
 
 // ---------------------------------------------------------------------------
