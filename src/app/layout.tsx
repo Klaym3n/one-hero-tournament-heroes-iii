@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Cinzel, Inter } from "next/font/google";
+import { connection } from "next/server";
 import { Suspense } from "react";
+import { env } from "@/lib/env";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Loading } from "@/components/ui/Frame";
@@ -9,12 +11,18 @@ import "./globals.css";
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"], display: "swap" });
 const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin", "latin-ext"], weight: ["600", "700", "900"], display: "swap" });
 
-export const metadata: Metadata = {
-  title: { default: "One Hero Open – Heroes III", template: "%s · One Hero Open" },
-  description: "One Hero Open (OHO) by Turnieje Orzecha – turniej 1v1 w Heroes of Might and Magic III: zapisy, grupy, drabinka i wyniki na żywo.",
-  applicationName: "One Hero Open",
-  openGraph: { siteName: "One Hero Open", locale: "pl_PL", type: "website" },
-};
+// APP_URL jest znany dopiero przy starcie kontenera (obraz budowany w CI), więc czytamy go w czasie żądania –
+// inaczej og:image / twitter:image wskazywałyby na localhost.
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  return {
+    metadataBase: new URL(env().APP_URL),
+    title: { default: "One Hero Open – Heroes III", template: "%s · One Hero Open" },
+    description: "One Hero Open (OHO) – turniej One Hero w Heroes of Might and Magic III organizowany przez Turnieje Orzecha.",
+    applicationName: "One Hero Open",
+    openGraph: { siteName: "One Hero Open", locale: "pl_PL", type: "website" },
+  };
+}
 
 export const viewport: Viewport = { themeColor: "#16171b", width: "device-width", initialScale: 1 };
 
