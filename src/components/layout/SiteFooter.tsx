@@ -36,20 +36,21 @@ const SUPPORT_URL = "https://buycoffee.to/orzechmc";
 export function SiteFooter() {
   return (
     <footer className="leather mt-10 border-t border-black shadow-[0_-1px_0_var(--gold-dark)]">
-      <Suspense fallback={null}>
-        <FooterPartners />
-      </Suspense>
-      {/* organizator i wsparcie */}
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 border-b border-gold-dark/40 px-4 py-6 text-center sm:flex-row sm:justify-between sm:text-left">
-        <div className="flex flex-col items-center gap-1 sm:items-start">
-          <span className="text-[11px] tracking-widest text-cream-dim uppercase">Organizator</span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/to-logo-poziome.png" alt="Turnieje Orzecha" width={600} height={229} className="h-14 w-auto" />
+      {/* organizator, partnerzy i wsparcie */}
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 border-b border-gold-dark/40 px-4 py-6 text-center lg:flex-row lg:items-start lg:justify-between lg:text-left">
+        <div className="flex w-full min-w-0 flex-col items-center gap-6 sm:flex-row sm:items-start sm:gap-10 lg:flex-1">
+          <div className="flex shrink-0 flex-col items-center gap-2 sm:items-start">
+            <span className="text-[11px] tracking-widest text-cream-dim uppercase">Organizator</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/to-logo-poziome.png" alt="Turnieje Orzecha" width={600} height={229} className="h-14 w-auto" />
+          </div>
+          <Suspense fallback={null}>
+            <FooterPartners />
+          </Suspense>
         </div>
-        <div className="flex max-w-md flex-col items-center gap-3 sm:items-end sm:text-right">
+        <div className="flex max-w-xs shrink-0 flex-col items-center gap-3 lg:w-52 lg:items-end lg:text-right">
           <p className="text-sm text-cream-dim">
-            Podoba Ci się <span className="text-cream">One Hero Open</span>? Wesprzyj turniej i kolejne wydarzenia{" "}
-            <span className="text-cream">Turniejów Orzecha</span>.
+            Podoba Ci się <span className="text-cream">One Hero Open</span>? Wesprzyj <span className="text-cream">Turnieje Orzecha</span>.
           </p>
           <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary">
             <CoffeeIcon /> Postaw kawę
@@ -77,9 +78,6 @@ export function SiteFooter() {
           </Suspense>
         </nav>
       </div>
-      <p className="pb-4 text-center text-[11px] text-cream-dim/60">
-        Heroes of Might and Magic jest znakiem towarowym należącym do Ubisoft. Serwis fanowski, niezwiązany z wydawcą.
-      </p>
     </footer>
   );
 }

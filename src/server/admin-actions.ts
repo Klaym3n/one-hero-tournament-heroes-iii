@@ -153,7 +153,7 @@ const configSchema = z
     rulesVersionLabel: z.string().trim().max(30),
     rulesUpdatedAt: z
       .string()
-      .refine((v) => v === "" || /^d{4}-d{2}-d{2}$/.test(v), "Nieprawidłowa data aktualizacji regulaminu")
+      .refine((v) => v === "" || /^\d{4}-\d{2}-\d{2}$/.test(v), "Nieprawidłowa data aktualizacji regulaminu")
       .transform((v) => v || null),
   })
   .partial();

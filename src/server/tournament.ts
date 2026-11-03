@@ -39,7 +39,9 @@ function assertAdmin(user: SessionUser) {
 // Zapisy
 // ---------------------------------------------------------------------------
 
-export const NICK_RE = /^[\p{L}\p{N}_.\- ]{2,24}$/u;
+/** Litery, cyfry, spacja i znaki specjalne (np. „[SDK] Gracz”) – bez znaków psujących wzmianki i formatowanie Discorda. */
+export const NICK_RE = /^(?!.*[`*@<>\\])[\p{L}\p{M}\p{N}\p{P}\p{S} ]{2,24}$/u;
+const NICK_ERROR = "Nick musi mieć 2–24 znaki (litery, cyfry, spacja i symbole, bez ` * @ < > \\).";
 
 export type RegisterResult = { status: "registered" } | { status: "needs_discord"; inviteUrl: string | null };
 
@@ -69,7 +71,7 @@ export async function register(user: SessionUser, input: { nick: string; acceptR
   const t = await getTournament();
   if (t.phase !== "REGISTRATION_OPEN") throw new ServiceError("Zapisy są obecnie zamknięte.");
   const nick = input.nick.trim().replace(/\s+/g, " ");
-  if (!NICK_RE.test(nick)) throw new ServiceError("Nick musi mieć 2–24 znaki (litery, cyfry, spacja, _ . -).");
+  if (!NICK_RE.test(nick)) throw new ServiceError(NICK_ERROR);
   if (!input.acceptRules) throw new ServiceError("Musisz zaakceptować regulamin.");
   if (!input.acceptPrivacy) throw new ServiceError("Musisz zaakceptować politykę prywatności.");
 
@@ -155,7 +157,7 @@ export async function updateProfile(user: SessionUser, input: { nick?: string; y
     } else {
       // nick zgłoszenia jest zamrażany po zamknięciu zapisów; profil konta bez zgłoszenia można zmieniać zawsze
       if (p && t.phase !== "REGISTRATION_OPEN" && t.phase !== "DRAFT") throw new ServiceError("Nick można zmienić tylko w trakcie zapisów.");
-      if (!NICK_RE.test(nick)) throw new ServiceError("Nick musi mieć 2–24 znaki (litery, cyfry, spacja, _ . -).");
+      if (!NICK_RE.test(nick)) throw new ServiceError(NICK_ERROR);
       const [taken] = await db
         .select({ id: participants.id })
         .from(participants)

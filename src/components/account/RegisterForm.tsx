@@ -58,7 +58,7 @@ export function RegisterForm({ defaultNick }: { defaultNick: string }) {
           Nick w grze
         </label>
         <input id="nick" className="input" value={nick} onChange={(e) => setNick(e.target.value)} minLength={2} maxLength={24} required autoComplete="nickname" />
-        <p className="mt-1 text-xs text-cream-dim">Nick, pod którym grasz w lobby HotA (2–24 znaki).</p>
+        <p className="mt-1 text-xs text-cream-dim">Nick, pod którym grasz w lobby HotA (2–24 znaki, symbole jak [ ] dozwolone).</p>
       </div>
       <label className="flex cursor-pointer items-start gap-3">
         <input type="checkbox" className="mt-1 h-4 w-4 accent-[var(--gold)]" checked={rules} onChange={(e) => setRules(e.target.checked)} />
