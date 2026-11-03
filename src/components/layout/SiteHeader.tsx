@@ -47,7 +47,7 @@ export function SiteHeader() {
           <Suspense fallback={<span className="h-8 w-24 animate-pulse rounded-sm bg-white/5" />}>
             <UserMenu />
           </Suspense>
-          <Suspense fallback={<MobileNav items={NAV} />}>
+          <Suspense fallback={null}>
             <MobileMenu />
           </Suspense>
         </div>
