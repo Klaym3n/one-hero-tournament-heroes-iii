@@ -446,6 +446,16 @@ body {
   -webkit-overflow-scrolling: touch;
   scrollbar-color: var(--gold-dark) transparent;
 }
+/* zmiana fazy drabinki – wjazd z kierunku przejścia (--bracket-dir: -1 / 0 / 1) */
+@keyframes bracket-enter {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--bracket-dir, 0) * 32px));
+  }
+}
+.bracket-enter {
+  animation: bracket-enter 0.28s ease-out;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
