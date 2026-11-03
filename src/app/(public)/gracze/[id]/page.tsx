@@ -50,7 +50,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
   return (
     <div className="space-y-8">
       <LiveRefresh topics={["players", "matches"]} />
-      <Frame bodyClassName="p-5 sm:p-6">
+      <Frame bodyClassName="p-4 sm:p-6">
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
           <Avatar src={profile.avatarUrl} name={p.nick} size={96} />
           <div className="flex-1 text-center sm:text-left">
@@ -84,7 +84,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
         </div>
       </Frame>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 max-sm:grid-cols-1 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
           <Frame title="Nadchodzące pojedynki">
             {profile.upcoming.length === 0 ? (

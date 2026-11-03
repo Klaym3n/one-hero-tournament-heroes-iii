@@ -192,12 +192,12 @@ export function Bracket({ rounds, third }: { rounds: BracketRound[]; third: Brac
 
   return (
     <div>
-      <div className="mb-3 flex items-center gap-4">
-        <div className="flex min-w-0 items-center gap-2">
+      <div className="mb-3 flex items-center gap-4 max-sm:flex-wrap max-sm:gap-2">
+        <div className="flex min-w-0 items-center gap-2 max-sm:w-full">
           <button className="btn btn-sm btn-icon btn-ghost shrink-0" onClick={() => go(start - 1)} disabled={all || start === 0} aria-label="Poprzednia faza">
             ‹
           </button>
-          <nav className="scroll-x min-w-0" aria-label="Fazy drabinki">
+          <nav className="scroll-x min-w-0 max-sm:flex-1" aria-label="Fazy drabinki">
             <div className="flex w-max gap-2 p-1">
               {rounds.map((r, i) => (
                 <button key={r.round} className={`btn btn-sm ${!all && i === start ? "btn-primary" : "btn-ghost"}`} aria-pressed={!all && i === start} onClick={() => go(i)}>

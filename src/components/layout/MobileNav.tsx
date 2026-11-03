@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-export function MobileNav({ items }: { items: { href: string; label: string }[] }) {
+export function MobileNav({ items, panel = false }: { items: { href: string; label: string }[]; panel?: boolean }) {
   const pathname = usePathname();
   const [openAt, setOpenAt] = useState<string | null>(null);
   // menu zamyka się samo po zmianie strony
@@ -22,9 +22,9 @@ export function MobileNav({ items }: { items: { href: string; label: string }[] 
         </svg>
       </button>
       {open && (
-        <nav className="leather absolute inset-x-0 top-14 border-b border-black shadow-[0_1px_0_var(--gold-dark)]" aria-label="Menu mobilne">
+        <nav className="leather absolute inset-x-0 top-14 max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain border-b border-black shadow-[0_1px_0_var(--gold-dark)]" aria-label="Menu mobilne">
           <ul className="mx-auto flex max-w-6xl flex-col px-4 py-2">
-            {[{ href: "/", label: "Start" }, ...items, { href: "/konto", label: "Moje konto" }].map((n) => (
+            {[{ href: "/", label: "Start" }, ...items, { href: "/konto", label: "Moje konto" }, ...(panel ? [{ href: "/admin", label: "Panel administracyjny" }] : [])].map((n) => (
               <li key={n.href}>
                 <Link href={n.href} className="block border-b border-white/5 py-3 font-display font-semibold text-cream">
                   {n.label}

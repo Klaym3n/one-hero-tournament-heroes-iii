@@ -22,7 +22,7 @@ export function GroupGrid({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div ref={grid} className="grid gap-8 md:grid-cols-2">
+    <div ref={grid} className="grid gap-8 max-sm:grid-cols-1 md:grid-cols-2">
       {children}
     </div>
   );

@@ -16,17 +16,17 @@ export function GroupTable({ name, standings, players, matches, highlight }: Pro
   const done = matches.filter((m) => m.status === "CONFIRMED" || m.status === "WALKOVER").length;
   return (
     <section className="frame-sm panel" aria-label={`Grupa ${name}`}>
-      <header className="frame-header flex items-center justify-between px-4 py-2">
+      <header className="frame-header flex items-center justify-between px-4 py-2 max-sm:px-3">
         <h2 className="font-display text-lg font-black text-gold-light">Grupa {name}</h2>
         <span className="text-xs text-cream-dim">
           {done}/{matches.length} meczów
         </span>
       </header>
       <div className="scroll-x">
-        <table className="table-h3 min-w-[420px]">
+        <table className="table-h3 sm:min-w-[420px]">
           <thead>
             <tr>
-              <th className="w-8 text-center">#</th>
+              <th className="w-8 text-center max-sm:w-7">#</th>
               <th>Gracz</th>
               <th className="num" title="Rozegrane">M</th>
               <th className="num" title="Wygrane">W</th>
@@ -54,7 +54,7 @@ export function GroupTable({ name, standings, players, matches, highlight }: Pro
                   <td>
                     <Link href={`/gracze/${r.participantId}`} className="flex items-center gap-2 hover:text-gold-light">
                       <Avatar src={p?.avatarUrl} name={p?.nick ?? "?"} size={22} />
-                      <span className={`truncate font-semibold ${p && p.status !== "ACTIVE" ? "line-through opacity-60" : ""}`}>{p?.nick ?? "?"}</span>
+                      <span className={`truncate font-semibold max-sm:max-w-[30vw] ${p && p.status !== "ACTIVE" ? "line-through opacity-60" : ""}`}>{p?.nick ?? "?"}</span>
                       {r.tied && (
                         <span className="badge badge-red" title="Remis do rozstrzygnięcia przez organizatora">
                           remis
@@ -75,7 +75,7 @@ export function GroupTable({ name, standings, players, matches, highlight }: Pro
           </tbody>
         </table>
       </div>
-      <details className="border-t border-gold/15 px-3 py-2">
+      <details className="border-t border-gold/15 px-3 py-2 max-sm:px-2">
         <summary className="cursor-pointer py-1 text-sm font-semibold text-cream-dim hover:text-gold-light">Mecze grupy</summary>
         <div className="mt-2 space-y-2 pb-1">
           {[...matches]

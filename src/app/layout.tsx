@@ -32,7 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="pl">
       <body className="flex min-h-dvh flex-col antialiased">
         <SiteHeader />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-10">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 max-sm:px-0 max-sm:pt-0 sm:py-10">
           <Suspense fallback={<Loading />}>{children}</Suspense>
         </main>
         <SiteFooter />

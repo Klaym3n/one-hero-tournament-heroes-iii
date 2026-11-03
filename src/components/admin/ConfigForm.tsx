@@ -51,7 +51,7 @@ export function GeneralConfigForm({ initial }: { initial: Config }) {
         exec(() => updateConfigAction(v));
       }}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 max-sm:grid-cols-1 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className="label">Nazwa turnieju</label>
           <input className="input" {...text("name")} maxLength={120} />
@@ -69,7 +69,7 @@ export function GeneralConfigForm({ initial }: { initial: Config }) {
           <input className="input" {...text("currentRoundLabel")} placeholder="np. Faza grupowa – kolejka 2" />
         </div>
       </div>
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+      <fieldset className="grid gap-4 max-sm:grid-cols-1 sm:grid-cols-2">
         <legend className="mb-2 font-display font-bold text-gold-light">Ustawienia gry</legend>
         <div>
           <label className="label">Poziom trudności</label>
@@ -88,7 +88,7 @@ export function GeneralConfigForm({ initial }: { initial: Config }) {
           <input className="input" {...gs("other")} />
         </div>
       </fieldset>
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+      <fieldset className="grid gap-4 max-sm:grid-cols-1 sm:grid-cols-2">
         <legend className="mb-2 font-display font-bold text-gold-light">Format meczów</legend>
         {boSelect("groupBestOf", "Faza grupowa")}
         {boSelect("knockoutBestOf", "Faza pucharowa")}
@@ -162,7 +162,7 @@ export function ContentEditor({ initial, rulesMeta }: { initial: Record<ContentK
         </label>
       </div>
       {tab === "rulesMd" && (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 max-sm:grid-cols-1 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="rules-version">
               Wersja regulaminu

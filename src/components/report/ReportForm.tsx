@@ -167,16 +167,16 @@ export function ReportForm({ matchId, bestOf, nickA, nickB, mySide, templates, h
   return (
     <div className="space-y-6">
       <div className="frame-sm panel sticky top-16 z-20" style={{ "--panel-bg": "#1c130b" } as React.CSSProperties}>
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 max-sm:gap-2 max-sm:px-3">
           <span className="flex min-w-0 items-center gap-2">
             <span className="h-5 w-1 bg-red-player" />
-            <span className="truncate font-semibold">{nickA}</span>
+            <span className="truncate font-semibold max-sm:text-sm">{nickA}</span>
           </span>
           <span className="title-gold shrink-0 text-3xl font-black tabular-nums">
             {score.a} : {score.b}
           </span>
           <span className="flex min-w-0 items-center justify-end gap-2">
-            <span className="truncate font-semibold">{nickB}</span>
+            <span className="truncate font-semibold max-sm:text-sm">{nickB}</span>
             <span className="h-5 w-1 bg-blue-player" />
           </span>
         </div>
@@ -191,9 +191,9 @@ export function ReportForm({ matchId, bestOf, nickA, nickB, mySide, templates, h
         const afterDecided = score.decided && i > score.decidedAt;
         return (
           <section key={i} className={`frame-sm panel ${afterDecided ? "opacity-60" : ""}`}>
-            <button type="button" onClick={() => setOpen(isOpen ? -1 : i)} className="frame-header flex w-full items-center justify-between px-4 py-2.5 text-left" aria-expanded={isOpen}>
+            <button type="button" onClick={() => setOpen(isOpen ? -1 : i)} className="frame-header flex w-full items-center justify-between px-4 py-2.5 text-left max-sm:gap-2 max-sm:px-3" aria-expanded={isOpen}>
               <span className="font-display text-lg font-bold text-gold-light">Gra {i + 1}</span>
-              <span className="flex items-center gap-2 text-xs">
+              <span className="flex items-center gap-2 text-xs max-sm:flex-wrap max-sm:justify-end max-sm:gap-1">
                 {g.winner && <span className="badge badge-gold">Wygrywa {nick(g.winner)}</span>}
                 {done ? <span className="badge badge-green">✔ kompletna</span> : <span className="badge">do uzupełnienia</span>}
                 <span aria-hidden>{isOpen ? "▲" : "▼"}</span>
@@ -211,7 +211,7 @@ export function ReportForm({ matchId, bestOf, nickA, nickB, mySide, templates, h
                         key={s}
                         aria-pressed={g.winner === s}
                         onClick={() => update(i, { winner: s })}
-                        className="tile flex items-center justify-center gap-2 px-3 py-3 font-display font-bold"
+                        className="tile flex items-center justify-center gap-2 px-3 py-3 font-display font-bold max-sm:min-w-0 max-sm:gap-1.5 max-sm:px-2 max-sm:text-sm"
                         style={g.winner === s ? { boxShadow: `0 0 0 2px ${accent(s)}, 0 0 14px ${accent(s)}` } : undefined}
                       >
                         <span className="h-4 w-1" style={{ background: accent(s) }} />
@@ -233,7 +233,7 @@ export function ReportForm({ matchId, bestOf, nickA, nickB, mySide, templates, h
                   </div>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-6 max-sm:grid-cols-1 lg:grid-cols-2">
                   {(["A", "B"] as Side[]).map((s) => {
                     const fk = s === "A" ? "factionA" : "factionB";
                     const hk = s === "A" ? "heroA" : "heroB";

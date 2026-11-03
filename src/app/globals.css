@@ -466,6 +466,62 @@ body {
   }
 }
 
+/* ---------- Telefony (< 640px, poniżej breakpointu sm) ----------
+   Desktop i tablety nie są dotykane. Rama strony (niebieska / czerwona) znika – zostaje tylko skóra
+   na całą szerokość ekranu, żeby treść miała więcej miejsca z boków. */
+@media (max-width: 639.98px) {
+  .frame {
+    padding: 0;
+    box-shadow: none;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+  }
+  .frame::after {
+    content: none;
+  }
+
+  /* przyciski i odznaki łamią tekst zamiast wystawać poza ekran */
+  .btn {
+    white-space: normal;
+    text-align: center;
+    max-width: 100%;
+  }
+  .badge {
+    white-space: normal;
+    max-width: 100%;
+  }
+
+  .table-h3 th,
+  .table-h3 td {
+    padding: 0.45rem 0.4rem;
+  }
+
+  /* pola formularzy min. 16px – iOS nie przybliża wtedy strony przy wejściu w pole */
+  .input,
+  .select,
+  .textarea {
+    font-size: 16px;
+  }
+
+  /* bez opóźnienia „double-tap to zoom” i bez niebieskiego błysku na Androidzie */
+  a,
+  button,
+  summary,
+  label,
+  .tile {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .prose-h3 {
+    overflow-wrap: anywhere;
+  }
+  .prose-h3 table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
 /* ---------- Partnerzy (strona główna) ----------
    miejsce na logo partnera – jasne logo na ciemnym tle (kolory pakietu logo OHO) */
 .partner-logo {

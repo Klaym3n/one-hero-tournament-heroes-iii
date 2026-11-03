@@ -92,7 +92,7 @@ export function ReportView({
                 </span>
                 <span className="badge badge-gold">Wygrywa {aWon ? nickA : nickB}</span>
               </div>
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              <div className="grid grid-cols-[1fr_auto_1fr] max-sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
                 <Side faction={g.factionA} hero={g.heroA} heroName={heroNames[g.heroA] ?? g.heroA} assets={assets} winner={aWon} align="left" />
                 <span className="font-display text-xs text-cream-dim">vs</span>
                 <Side faction={g.factionB} hero={g.heroB} heroName={heroNames[g.heroB] ?? g.heroB} assets={assets} winner={!aWon} align="right" />

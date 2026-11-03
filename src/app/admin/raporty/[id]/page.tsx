@@ -67,7 +67,7 @@ export default async function ModerateMatchPage({ params }: { params: Promise<{ 
         {data.reports.length === 0 ? (
           <Empty>Brak raportów.</Empty>
         ) : (
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-4 max-sm:grid-cols-1 xl:grid-cols-2">
             {data.reports.map((r) => (
               <div key={r.id} className="space-y-2">
                 <ReportView report={r} playerAId={m.playerAId} nickA={nickA} nickB={nickB} heroNames={heroNames} assets={assets} />
@@ -92,7 +92,7 @@ export default async function ModerateMatchPage({ params }: { params: Promise<{ 
         </Frame>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 max-sm:grid-cols-1 md:grid-cols-2">
         {ready && (
           <Frame title="Walkower / reset">
             <WalkoverReset matchId={m.id} nickA={nickA} nickB={nickB} canReset={m.status !== "PENDING"} />

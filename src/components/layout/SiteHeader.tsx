@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { UserMenu } from "./UserMenu";
 import { MobileNav } from "./MobileNav";
+import { getSessionUser } from "@/lib/auth/session";
+import { hasRole } from "@/lib/authz";
 
 export const NAV = [
   { href: "/turniej", label: "Turniej" },
@@ -10,6 +12,12 @@ export const NAV = [
   { href: "/gracze", label: "Gracze" },
   { href: "/regulamin", label: "Regulamin" },
 ];
+
+/** Menu mobilne – moderatorzy dostają w nim link do panelu (przycisk „Panel” jest ukryty na telefonie). */
+async function MobileMenu() {
+  const user = await getSessionUser();
+  return <MobileNav items={NAV} panel={hasRole(user, "MODERATOR")} />;
+}
 
 /** Górny pasek w stylu paska zasobów z ekranu przygody. */
 export function SiteHeader() {
@@ -39,8 +47,8 @@ export function SiteHeader() {
           <Suspense fallback={<span className="h-8 w-24 animate-pulse rounded-sm bg-white/5" />}>
             <UserMenu />
           </Suspense>
-          <Suspense fallback={null}>
-            <MobileNav items={NAV} />
+          <Suspense fallback={<MobileNav items={NAV} />}>
+            <MobileMenu />
           </Suspense>
         </div>
       </div>

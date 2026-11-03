@@ -26,7 +26,7 @@ export default async function AccountPage() {
   return (
     <div className="space-y-8">
       <LiveRefresh topics={[`user:${user.id}`, "matches", "groups", "bracket"]} />
-      <Frame bodyClassName="p-5">
+      <Frame bodyClassName="p-5 max-sm:p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <Avatar src={user.avatarUrl} name={name} size={64} />
           <div className="flex-1">
@@ -75,7 +75,7 @@ export default async function AccountPage() {
       )}
 
       {registered && matches && (
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-8 max-sm:grid-cols-1 lg:grid-cols-3">
           <div className="space-y-8 lg:col-span-2">
             <Frame title="Mecze do rozegrania">
               {matches.open.length === 0 ? (

@@ -56,19 +56,19 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
     <div className="space-y-8">
       <LiveRefresh topics={[`match:${m.id}`]} />
 
-      <Frame bodyClassName="p-5 sm:p-8">
+      <Frame bodyClassName="p-3 sm:p-8">
         <p className="mb-4 text-center text-sm text-cream-dim">
           {STAGE_LABELS[m.stage]} · {m.label} · Bo{m.bestOf}
         </p>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-6">
+        <div className="grid grid-cols-[1fr_auto_1fr] max-sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 sm:gap-6">
           {[m.a, m.b].map((p, i) => {
             const isWinner = done && m.winnerId && m.winnerId === p?.id;
             const block = (
-              <div key={i} className={`flex flex-col items-center gap-2 text-center ${i === 0 ? "sm:items-end sm:text-right" : "sm:items-start sm:text-left"}`}>
+              <div key={i} className={`flex flex-col items-center max-sm:min-w-0 gap-2 text-center ${i === 0 ? "sm:items-end sm:text-right" : "sm:items-start sm:text-left"}`}>
                 <span className={`h-1 w-16 ${i === 0 ? "bg-red-player" : "bg-blue-player"}`} aria-hidden />
                 <Avatar src={p?.avatarUrl} name={p?.nick ?? "?"} size={64} />
                 {p ? (
-                  <Link href={`/gracze/${p.id}`} className={`font-display text-lg font-bold hover:underline sm:text-2xl ${isWinner ? "text-gold-light" : ""}`}>
+                  <Link href={`/gracze/${p.id}`} className={`font-display text-sm font-bold max-sm:max-w-full max-sm:[overflow-wrap:anywhere] hover:underline sm:text-2xl ${isWinner ? "text-gold-light" : ""}`}>
                     {p.nick}
                   </Link>
                 ) : (
@@ -83,7 +83,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
               <div key="pair" className="contents">
                 <div className="self-center pt-6 text-center">
                   <p className="title-gold text-4xl font-black tabular-nums sm:text-6xl">{done ? `${m.scoreA}:${m.scoreB}` : "VS"}</p>
-                  <div className="mt-2">
+                  <div className="mt-2 max-sm:hidden">
                     <StatusBadge status={m.status} />
                   </div>
                 </div>
@@ -92,7 +92,11 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
             );
           })}
         </div>
-        <p className="mt-6 text-center text-sm">
+        {/* telefon: status pod graczami, żeby środkowa kolumna nie zabierała miejsca na nicki */}
+        <div className="mt-4 text-center sm:hidden">
+          <StatusBadge status={m.status} />
+        </div>
+        <p className="mt-6 text-center text-sm max-sm:mt-3">
           {m.scheduledAt ? (
             <>
               📅 Planowany start: <strong>{fmtDateTime(m.scheduledAt)}</strong> <span className="text-cream-dim">(czas polski)</span>
@@ -104,7 +108,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
       </Frame>
 
       {(mySide || isStaff) && ready && !done && (
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-8 max-sm:grid-cols-1 md:grid-cols-2">
           <Frame title="Wynik meczu">
             {m.status === "DISPUTED" ? (
               <p className="text-sm">

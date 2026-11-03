@@ -23,7 +23,7 @@ export function TemplateRow({ initial }: { initial: Tpl }) {
   const isNew = !initial.id;
   return (
     <div className="space-y-2 rounded-sm bg-black/20 p-3">
-      <div className="grid gap-2 sm:grid-cols-[1fr_2fr_auto_auto]">
+      <div className="grid gap-2 max-sm:grid-cols-1 sm:grid-cols-[1fr_2fr_auto_auto]">
         <input className="input" placeholder="Nazwa szablonu" value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} maxLength={60} />
         <input className="input" placeholder="Opis (opcjonalnie)" value={v.description} onChange={(e) => setV({ ...v, description: e.target.value })} maxLength={300} />
         <input className="input w-20" type="number" title="Kolejność" value={v.sortOrder} onChange={(e) => setV({ ...v, sortOrder: Number(e.target.value) })} />
@@ -157,7 +157,7 @@ export function PartnerRow({ initial }: { initial: PartnerForm }) {
         )}
       </div>
       <div className="min-w-0 flex-1 space-y-2">
-        <div className="grid gap-2 sm:grid-cols-[2fr_1fr_auto_auto]">
+        <div className="grid gap-2 max-sm:grid-cols-1 sm:grid-cols-[2fr_1fr_auto_auto]">
           <input className="input" placeholder="Nazwa partnera" {...text("name")} maxLength={80} />
           <input className="input" placeholder="Rodzaj (np. Partner medialny)" {...text("tier")} maxLength={60} />
           <input className="input w-20" type="number" title="Kolejność" value={v.sortOrder} onChange={(e) => setV({ ...v, sortOrder: Number(e.target.value) })} />
@@ -165,7 +165,7 @@ export function PartnerRow({ initial }: { initial: PartnerForm }) {
             <input type="checkbox" checked={v.active} onChange={(e) => setV({ ...v, active: e.target.checked })} className="accent-[var(--gold)]" /> widoczny
           </label>
         </div>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2 max-sm:grid-cols-1 sm:grid-cols-2">
           <input className="input" placeholder="Strona partnera (https://…)" {...text("url")} maxLength={500} />
           <input className="input" placeholder="Logo: /grafika/partners/nazwa.png lub https://…" {...text("logoUrl")} maxLength={500} />
         </div>

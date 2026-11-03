@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
   return (
     <PageFrame className="mx-auto max-w-lg">
-      <Frame title="Wejście do turnieju" bodyClassName="p-6 sm:p-8">
+      <Frame title="Wejście do turnieju" bodyClassName="p-4 sm:p-8">
         <div className="space-y-6 text-center">
           <p className="text-cream-dim">
             Logowanie odbywa się wyłącznie przez konto <strong className="text-cream">Discord</strong>. Samo zalogowanie nie zapisuje Cię do turnieju – zrobisz to w kolejnym kroku.

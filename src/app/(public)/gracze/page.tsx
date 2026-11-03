@@ -27,7 +27,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
         {players.length === 0 ? (
           <Empty>{q ? "Brak graczy pasujących do wyszukiwania." : "Nikt jeszcze się nie zapisał."}</Empty>
         ) : (
-          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-2 max-sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {players.map((p) => (
               <li key={p.id}>
                 <Link

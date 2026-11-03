@@ -41,9 +41,9 @@ export default async function AdminStatsPage() {
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {tiles.map(([k, v]) => (
-          <div key={k} className="stone frame-sm p-4">
+          <div key={k} className="stone frame-sm p-4 max-sm:p-3">
             <p className="text-[11px] tracking-widest text-cream-dim uppercase">{k}</p>
-            <p className="font-display text-2xl font-bold text-gold-light tabular-nums">{v}</p>
+            <p className="font-display text-2xl font-bold text-gold-light tabular-nums max-sm:text-xl">{v}</p>
           </div>
         ))}
       </div>
@@ -72,9 +72,9 @@ export default async function AdminStatsPage() {
               <span>{short(series[Math.floor(DAYS / 2)].day)}</span>
               <span>{short(series[DAYS - 1].day)}</span>
             </div>
-            <details className="mt-3 text-sm">
+            <details className="mt-3 text-sm max-sm:overflow-x-auto">
               <summary className="cursor-pointer text-cream-dim">Tabela dzienna</summary>
-              <table className="table-h3 mt-2">
+              <table className="table-h3 mt-2 max-sm:text-xs">
                 <thead>
                   <tr>
                     <th>Dzień</th>
@@ -97,7 +97,7 @@ export default async function AdminStatsPage() {
         )}
       </Frame>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 max-sm:grid-cols-1 lg:grid-cols-2">
         <Frame title="Najczęściej odwiedzane strony" bodyClassName="p-0">
           {s.pages.length === 0 ? (
             <Empty>Brak danych.</Empty>
@@ -113,7 +113,7 @@ export default async function AdminStatsPage() {
               <tbody>
                 {s.pages.map((p) => (
                   <tr key={p.path}>
-                    <td className="max-w-64 truncate font-mono text-xs">{p.path}</td>
+                    <td className="max-w-64 truncate font-mono text-xs max-sm:max-w-[45vw]">{p.path}</td>
                     <td className="text-right tabular-nums">{p.views}</td>
                     <td className="text-right tabular-nums">{p.visitors}</td>
                   </tr>
@@ -136,7 +136,7 @@ export default async function AdminStatsPage() {
               <tbody>
                 {s.referrers.map((r) => (
                   <tr key={r.referrer}>
-                    <td className="text-sm">{r.referrer}</td>
+                    <td className="text-sm max-sm:break-all">{r.referrer}</td>
                     <td className="text-right tabular-nums">{r.views}</td>
                   </tr>
                 ))}

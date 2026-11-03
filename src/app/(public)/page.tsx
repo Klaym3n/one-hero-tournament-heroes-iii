@@ -60,7 +60,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 max-sm:grid-cols-1 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
           <Frame title="Aktualności">
             {news.length === 0 ? (

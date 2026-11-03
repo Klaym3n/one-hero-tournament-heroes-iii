@@ -22,11 +22,11 @@ export function PageFrame({ variant = "blue", children, className = "" }: { vari
 }
 
 /** Okno (panel) wewnątrz ramy strony: ramka frame-sm na przyciemnionej skórze. */
-export function Frame({ title, actions, children, className = "", bodyClassName = "p-4 sm:p-5", as: Tag = "section" }: Props) {
+export function Frame({ title, actions, children, className = "", bodyClassName = "p-3 sm:p-5", as: Tag = "section" }: Props) {
   return (
     <Tag className={`frame-sm panel ${className}`}>
       {title !== undefined && (
-        <header className="frame-header flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
+        <header className="frame-header flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4">
           <h2 className="font-display text-base font-bold text-gold-light sm:text-lg">{title}</h2>
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </header>

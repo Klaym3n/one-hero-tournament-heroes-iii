@@ -143,6 +143,95 @@ export function AvailabilityCalendar({
     setDirty(true);
   };
 
+  // ---- widok telefonu: jeden dzień naraz, pola zaznaczane stuknięciem ----
+  const isPast = (d: number, s: number) => cellStart(week, d, s) + 30 * 60_000 <= now;
+  // domyślnie dzisiejszy (pierwszy nie całkiem miniony) dzień tygodnia
+  const [day, setDay] = useState(() => Math.max(0, DAYS.findIndex((_, d) => !isPast(d, SLOTS - 1))));
+  const hours = (d: number, to = SLOTS) => {
+    let n = 0;
+    for (let s = 0; s < to; s++) if (cells.has(`${d}:${s}`)) n++;
+    return n / 2;
+  };
+  const nightHours = (d: number) => hours(d, 12);
+  // noc (0–6) zwinięta, chyba że w danym dniu coś w niej zaznaczono
+  const [night, setNight] = useState(() => nightHours(day) > 0);
+  const pickDay = (d: number) => {
+    setDay(d);
+    setNight(nightHours(d) > 0);
+  };
+  /** Ustawia pola [from, to) dnia d; on = null przełącza (wszystkie zaznaczone → odznacz, w przeciwnym razie zaznacz). */
+  const setSlots = (d: number, from: number, to: number, on: boolean | null) => {
+    const keys: string[] = [];
+    for (let s = from; s < to; s++) if (!isPast(d, s)) keys.push(`${d}:${s}`);
+    if (!keys.length) return;
+    const value = on ?? !keys.every((k) => cells.has(k));
+    setCells((prev) => {
+      const next = new Set(prev);
+      for (const k of keys) {
+        if (value) next.add(k);
+        else next.delete(k);
+      }
+      return next;
+    });
+    setDirty(true);
+  };
+  const copyDayToWeek = () => {
+    setCells((prev) => {
+      const next = new Set(prev);
+      for (let d = 0; d < 7; d++) {
+        if (d === day) continue;
+        for (let s = 0; s < SLOTS; s++) {
+          if (isPast(d, s)) continue;
+          if (prev.has(`${day}:${s}`)) next.add(`${d}:${s}`);
+          else next.delete(`${d}:${s}`);
+        }
+      }
+      return next;
+    });
+    setDirty(true);
+  };
+  const dayDate = (d: number) => {
+    const date = new TZDate(week.getFullYear(), week.getMonth(), week.getDate() + d, 12, 0, TZ);
+    return { dd: String(date.getDate()).padStart(2, "0"), long: new Intl.DateTimeFormat("pl-PL", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" }).format(date) };
+  };
+  const hourRow = (h: number) => (
+    <div key={h} className="grid grid-cols-[3rem_1fr_1fr] gap-1.5">
+      <button
+        type="button"
+        className="rounded-sm bg-black/30 font-display text-sm font-bold text-gold-light disabled:opacity-30"
+        disabled={isPast(day, 2 * h + 1)}
+        onClick={() => setSlots(day, 2 * h, 2 * h + 2, null)}
+        aria-label={`Cała godzina ${h}:00–${h + 1}:00`}
+      >
+        {h}
+      </button>
+      {[2 * h, 2 * h + 1].map((s) => {
+        const on = cells.has(`${day}:${s}`);
+        const past = isPast(day, s);
+        return (
+          <button
+            type="button"
+            key={s}
+            aria-pressed={on}
+            disabled={past}
+            onClick={() => setSlots(day, s, s + 1, null)}
+            className={`h-11 rounded-sm border font-display text-sm tabular-nums ${
+              past ? "border-transparent bg-black/40 text-cream-dim/30" : on ? "border-emerald-light bg-emerald-light/80 font-bold text-white" : "border-black/50 bg-white/[0.04] text-cream-dim"
+            }`}
+          >
+            {on && "✔ "}
+            {h}:{s % 2 ? "30" : "00"}
+          </button>
+        );
+      })}
+    </div>
+  );
+  const PARTS: [string, number, number][] = [
+    ["Rano", 6, 12],
+    ["Popołudnie", 12, 18],
+    ["Wieczór", 18, 24],
+  ];
+
   return (
     <div className="space-y-4" onMouseUp={end} onMouseLeave={end} onTouchEnd={end}>
       <Link href="/konto" onClick={(e) => guardNav(e, "/konto")} className="btn btn-sm btn-ghost">
@@ -197,9 +286,12 @@ export function AvailabilityCalendar({
           >
             Wyczyść
           </button>
-          <button type="button" className="btn btn-sm btn-success" disabled={pending || !dirty} onClick={save}>
-            {pending ? "Zapisywanie…" : dirty ? "Zapisz" : "Zapisano"}
-          </button>
+          {/* na telefonie zapis jest w przyklejonym pasku na dole */}
+          <span className="contents max-sm:hidden">
+            <button type="button" className="btn btn-sm btn-success" disabled={pending || !dirty} onClick={save}>
+              {pending ? "Zapisywanie…" : dirty ? "Zapisz" : "Zapisano"}
+            </button>
+          </span>
         </div>
       </div>
       {leaveTo && dirty && (
@@ -222,10 +314,77 @@ export function AvailabilityCalendar({
         </div>
       )}
       <FeedbackBox feedback={feedback} />
-      <p className="text-xs text-cream-dim">
+      <p className="text-xs text-cream-dim max-sm:hidden">
         Kliknij lub przeciągnij po polach, aby zaznaczyć godziny, w których możesz grać (czas polski). Gdy Twoja dostępność pokryje się z dostępnością przeciwnika, dostaniecie powiadomienie z propozycją terminu.
       </p>
-      <div className="frame-xs">
+      <p className="text-xs text-cream-dim sm:hidden">
+        Wybierz dzień i stukaj w pola z godzinami, w których możesz grać (czas polski). Stuknięcie w godzinę po lewej zaznacza całą godzinę. Gdy Twoja dostępność pokryje się z dostępnością
+        przeciwnika, dostaniecie powiadomienie z propozycją terminu.
+      </p>
+
+      {/* telefon: jeden dzień naraz, duże pola do stukania – przewijanie strony działa normalnie */}
+      <div className="space-y-4 sm:hidden">
+        <div className="sticky top-14 z-20 -mx-3 grid grid-cols-7 gap-1 bg-[#1c130b]/95 px-3 py-2 shadow-[0_6px_12px_rgba(0,0,0,0.4)]" role="group" aria-label="Dzień tygodnia">
+          {DAYS.map((name, d) => {
+            const n = hours(d);
+            return (
+              <button
+                type="button"
+                key={d}
+                aria-pressed={day === d}
+                onClick={() => pickDay(d)}
+                className={`tile flex flex-col items-center px-0 py-1.5 leading-tight ${isPast(d, SLOTS - 1) ? "opacity-40" : ""}`}
+                aria-label={`${dayDate(d).long}${n ? `, zaznaczono ${n} h` : ""}`}
+              >
+                <span className="text-[10px] tracking-wide text-cream-dim uppercase">{name}</span>
+                <span className="font-display text-base font-bold text-gold-light">{dayDate(d).dd}</span>
+                <span className={`mt-1 h-1.5 w-1.5 rounded-full ${n ? "bg-emerald-light" : "bg-white/10"}`} aria-hidden />
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="font-display font-bold text-gold-light first-letter:uppercase">{dayDate(day).long}</p>
+          <p className="shrink-0 text-xs text-cream-dim">{hours(day) ? `${hours(day)} h` : "nic nie zaznaczono"}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" className="btn btn-sm btn-ghost" onClick={() => setSlots(day, 36, 46, true)}>
+            + Wieczór 18–23
+          </button>
+          <button type="button" className="btn btn-sm btn-ghost" onClick={() => setSlots(day, 0, SLOTS, true)}>
+            + Cały dzień
+          </button>
+          <button type="button" className="btn btn-sm btn-ghost" onClick={() => setSlots(day, 0, SLOTS, false)}>
+            Wyczyść dzień
+          </button>
+          <button type="button" className="btn btn-sm btn-ghost" onClick={copyDayToWeek}>
+            Kopiuj na cały tydzień
+          </button>
+        </div>
+        <div className="frame-xs bg-black/20 px-2">
+          <button type="button" className="flex w-full items-center justify-between py-2 font-display text-sm font-bold text-cream-dim" aria-expanded={night} onClick={() => setNight(!night)}>
+            <span>Noc 0:00–6:00{nightHours(day) ? ` · ${nightHours(day)} h` : ""}</span>
+            <span aria-hidden>{night ? "▲" : "▼"}</span>
+          </button>
+          {night && <div className="space-y-1.5 pb-2">{Array.from({ length: 6 }, (_, h) => hourRow(h))}</div>}
+        </div>
+        {PARTS.map(([label, from, to]) => (
+          <section key={label} className="space-y-1.5">
+            <h3 className="font-display text-sm font-bold tracking-wider text-cream-dim uppercase">
+              {label} {from}:00–{to}:00
+            </h3>
+            {Array.from({ length: to - from }, (_, i) => hourRow(from + i))}
+          </section>
+        ))}
+        <div className="sticky bottom-0 z-20 -mx-3 flex items-center gap-3 border-t border-gold-dark/60 bg-[#1c130b]/95 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-6px_16px_rgba(0,0,0,0.5)]">
+          <p className="min-w-0 flex-1 text-xs text-cream-dim">{dirty ? "Masz niezapisane zmiany" : "Wszystko zapisane"}</p>
+          <button type="button" className="btn btn-success shrink-0" disabled={pending || !dirty} onClick={save}>
+            {pending ? "Zapisywanie…" : dirty ? "Zapisz" : "Zapisano"}
+          </button>
+        </div>
+      </div>
+
+      <div className="frame-xs max-sm:hidden">
         <div ref={scroller} className="scroll-x max-h-[70vh] overflow-y-auto" style={{ touchAction: painting ? "none" : "pan-y" }}>
           <table className="w-full min-w-[640px] border-collapse text-xs select-none" onTouchMove={onTouchMove}>
             <thead className="sticky top-0 z-10">

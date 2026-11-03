@@ -37,9 +37,9 @@ export default async function AdminHome() {
       <h1 className="title-gold text-3xl font-black">Pulpit</h1>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {tiles.map(([k, v, href]) => (
-          <Link key={k} href={href} className="stone frame-sm p-4 hover:brightness-125">
+          <Link key={k} href={href} className="stone frame-sm p-4 hover:brightness-125 max-sm:p-3">
             <p className="text-[11px] tracking-widest text-cream-dim uppercase">{k}</p>
-            <p className={`font-display text-2xl font-bold ${k === "Spory" && Number(v) > 0 ? "text-crimson-light" : "text-gold-light"}`}>{v}</p>
+            <p className={`font-display text-2xl font-bold max-sm:text-lg max-sm:[overflow-wrap:anywhere] ${k === "Spory" && Number(v) > 0 ? "text-crimson-light" : "text-gold-light"}`}>{v}</p>
           </Link>
         ))}
       </div>
@@ -55,7 +55,7 @@ export default async function AdminHome() {
       )}
       {hasRole(user, "ADMIN") && (
         <Frame title="Konfiguracja środowiska">
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid gap-2 max-sm:grid-cols-1 sm:grid-cols-2">
             {checks.map(([label, ok]) => (
               <li key={label} className="flex items-center gap-2 text-sm">
                 <span className={ok ? "text-emerald-light" : "text-crimson-light"}>{ok ? "✔" : "✖"}</span> {label}

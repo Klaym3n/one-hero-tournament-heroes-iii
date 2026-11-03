@@ -24,7 +24,7 @@ export default async function TournamentInfoPage() {
     <div className="space-y-8">
       <LiveRefresh topics={["content"]} />
       <PageTitle subtitle={t.tagline}>{t.name}</PageTitle>
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 max-sm:grid-cols-1 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
           {t.infoMd && (
             <Frame>
@@ -39,7 +39,7 @@ export default async function TournamentInfoPage() {
           <Frame title="Ustawienia gry">
             <dl className="divide-y divide-gold/10">
               {settings.map(([k, v]) => (
-                <div key={k} className="grid gap-1 py-2.5 sm:grid-cols-3">
+                <div key={k} className="grid gap-1 max-sm:grid-cols-1 py-2.5 sm:grid-cols-3">
                   <dt className="text-sm font-semibold text-cream-dim">{k}</dt>
                   <dd className="sm:col-span-2">{v}</dd>
                 </div>

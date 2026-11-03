@@ -17,7 +17,7 @@ export default async function RegisterPage() {
   if (me?.status === "ACTIVE") redirect("/konto");
 
   return (
-    <Frame className="mx-auto max-w-lg" title="Zapis do turnieju" bodyClassName="p-5 sm:p-7">
+    <Frame className="mx-auto max-w-lg" title="Zapis do turnieju" bodyClassName="p-4 sm:p-7">
       {t.phase !== "REGISTRATION_OPEN" ? (
         <p className="text-center text-cream-dim">Zapisy są obecnie zamknięte.</p>
       ) : me?.status === "BANNED" ? (
