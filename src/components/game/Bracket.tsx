@@ -279,12 +279,6 @@ export function Bracket({ rounds, third }: { rounds: BracketRound[]; third: Brac
           </div>
         </div>
       </div>
-      {!all && start + visible.length < rounds.length && (
-        <p className="mt-2 text-center text-xs text-cream-dim">
-          Dalej: {rounds[start + visible.length].name}
-          {start + visible.length < rounds.length - 1 && <> … {finalRound?.name}</>} – wybierz fazę u góry lub użyj strzałki ›.
-        </p>
-      )}
     </div>
   );
 }

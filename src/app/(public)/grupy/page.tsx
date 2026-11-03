@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Frame, Empty, PageTitle } from "@/components/ui/Frame";
 import { GroupTable } from "@/components/game/GroupTable";
+import { GroupGrid } from "@/components/game/GroupGrid";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { getTournament } from "@/lib/tournament/current";
 import { loadGroupStandings } from "@/server/tournament";
@@ -37,7 +38,7 @@ export default async function GroupsPage() {
     <div>
       <LiveRefresh topics={["groups", "players"]} />
       <PageTitle>Faza grupowa</PageTitle>
-      <div className="grid gap-8 md:grid-cols-2">
+      <GroupGrid>
         {data.map((d) => (
           <GroupTable
             key={d.group.id}
@@ -48,12 +49,8 @@ export default async function GroupsPage() {
             highlight={me?.id}
           />
         ))}
-      </div>
-      <p className="mt-6 text-center text-xs text-cream-dim">
-        Każdy z każdym, mecze Bo{t.groupBestOf}. Awans: 2 najlepsze osoby z każdej grupy.
-        <br />
-        Kolejność: punkty (wygrane mecze) → bilans gier → mała tabela (mecze bezpośrednie) → decyzja organizatora.
-      </p>
+      </GroupGrid>
+      <p className="mt-6 text-center text-xs text-cream-dim">Każdy z każdym, mecze Bo{t.groupBestOf}. Awans: 2 najlepsze osoby z każdej grupy.</p>
     </div>
   );
 }

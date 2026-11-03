@@ -72,14 +72,9 @@ export function proposeGroupVariants(
   return [...all].sort((a, b) => distance(a) - distance(b)).slice(0, 2);
 }
 
+/** Grupy numerowane od 1 („Grupa 1”, „Grupa 27”) – litery przy dużej liczbie grup dawały mało czytelne „AA”, „AB”. */
 export function groupName(index: number): string {
-  let name = "";
-  let i = index;
-  do {
-    name = String.fromCharCode(65 + (i % 26)) + name;
-    i = Math.floor(i / 26) - 1;
-  } while (i >= 0);
-  return name;
+  return String(index + 1);
 }
 
 export type Rng = (maxExclusive: number) => number;

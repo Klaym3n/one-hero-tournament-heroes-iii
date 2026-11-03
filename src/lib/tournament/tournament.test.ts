@@ -67,7 +67,7 @@ describe("drawGroups / roundRobin", () => {
   });
 
   it("nazwy grup", () => {
-    expect([0, 1, 25, 26, 27].map(groupName)).toEqual(["A", "B", "Z", "AA", "AB"]);
+    expect([0, 1, 25, 26, 27].map(groupName)).toEqual(["1", "2", "26", "27", "28"]);
   });
 });
 
