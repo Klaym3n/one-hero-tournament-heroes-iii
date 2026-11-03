@@ -48,8 +48,8 @@
   --color-stone: var(--stone);
   --color-red-player: var(--red-player);
   --color-blue-player: var(--blue-player);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-cinzel), "Times New Roman", serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cinzel Variable", "Times New Roman", serif;
 }
 
 html {

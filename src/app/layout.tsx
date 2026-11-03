@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Inter } from "next/font/google";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { env } from "@/lib/env";
@@ -7,10 +6,11 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Loading } from "@/components/ui/Frame";
 import { PageViewTracker } from "@/components/PageViewTracker";
+// fonty z paczek npm zamiast next/font/google: build nie pobiera nic z sieci (Google potrafi zwrócić
+// w CI adresy plików, których Turbopack nie obsługuje, i build się wywala)
+import "@fontsource-variable/inter/wght.css";
+import "@fontsource-variable/cinzel/wght.css";
 import "./globals.css";
-
-const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"], display: "swap" });
-const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin", "latin-ext"], weight: ["600", "700", "900"], display: "swap" });
 
 // APP_URL jest znany dopiero przy starcie kontenera (obraz budowany w CI), więc czytamy go w czasie żądania –
 // inaczej og:image / twitter:image wskazywałyby na localhost.
@@ -29,7 +29,7 @@ export const viewport: Viewport = { themeColor: "#16171b", width: "device-width"
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pl" className={`${inter.variable} ${cinzel.variable}`}>
+    <html lang="pl">
       <body className="flex min-h-dvh flex-col antialiased">
         <SiteHeader />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-10">
