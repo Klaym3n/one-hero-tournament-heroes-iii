@@ -6,6 +6,7 @@ import { env } from "@/lib/env";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Loading } from "@/components/ui/Frame";
+import { PageViewTracker } from "@/components/PageViewTracker";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"], display: "swap" });
@@ -35,6 +36,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Suspense fallback={<Loading />}>{children}</Suspense>
         </main>
         <SiteFooter />
+        <Suspense fallback={null}>
+          <PageViewTracker />
+        </Suspense>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@ import { upsertDiscordUser } from "@/lib/auth/users";
 import { createSession } from "@/lib/auth/session";
 import { env } from "@/lib/env";
 import { safeNext } from "@/lib/safe-redirect";
+import { log } from "@/lib/log";
 
 /** Logowanie testowe bez Discorda – tylko gdy DEV_LOGIN=true i NODE_ENV != production. */
 export async function GET(req: NextRequest) {
@@ -14,5 +15,6 @@ export async function GET(req: NextRequest) {
   const discordId = req.nextUrl.searchParams.get("id") ?? `dev-${name}`;
   const user = await upsertDiscordUser({ discordId, username: name, globalName: name, avatarUrl: null });
   await createSession(user.id);
+  log.info("auth", "logowanie testowe (DEV_LOGIN)", user);
   return NextResponse.redirect(new URL(safeNext(req.nextUrl.searchParams.get("next")), e.APP_URL));
 }

@@ -30,6 +30,7 @@ export default async function AdminConfigPage() {
       <Frame title="Treści stron">
         <ContentEditor
           initial={{ infoMd: t.infoMd, formatMd: t.formatMd, prizesMd: t.prizesMd, scheduleMd: t.scheduleMd, rulesMd: t.rulesMd, privacyMd: t.privacyMd }}
+          rulesMeta={{ rulesVersionLabel: t.rulesVersionLabel, rulesUpdatedAt: t.rulesUpdatedAt ?? "", autoVersion: t.rulesVersion }}
         />
       </Frame>
     </div>

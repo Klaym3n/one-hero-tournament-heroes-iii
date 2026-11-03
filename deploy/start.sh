@@ -8,6 +8,10 @@ export HOSTNAME="0.0.0.0"
 if [ -z "${ASSETS_DIR}" ] && [ -d /home/container ] && [ -w /home/container ]; then
   export ASSETS_DIR=/home/container/assets
 fi
+# Dziennik zdarzeń – plik na każdy dzień (logs/RRRR-MM-DD.log), widoczny w menedżerze plików panelu
+if [ -z "${LOG_DIR}" ] && [ -d /home/container ] && [ -w /home/container ]; then
+  export LOG_DIR=/home/container/logs
+fi
 if [ -n "${ASSETS_DIR}" ]; then
   mkdir -p "${ASSETS_DIR}/factions" "${ASSETS_DIR}/heroes" "${ASSETS_DIR}/ui"
   # domyślne pliki kopiowane tylko, jeśli nie istnieją
@@ -16,6 +20,6 @@ fi
 
 echo "[start] migracje bazy danych…"
 node /app/scripts/migrate.mjs
-echo "[start] uruchamiam serwis na porcie ${PORT}"
+echo "[start] uruchamiam serwis na porcie ${PORT}${LOG_DIR:+ (logi: ${LOG_DIR})}"
 cd /app
 exec node server.js

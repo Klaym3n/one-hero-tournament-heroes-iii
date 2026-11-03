@@ -26,6 +26,8 @@ export const ACTION_LABELS: Record<string, string> = {
   PARTNER_UPDATE: "Zmiana partnerów turnieju",
   ROUND_PING: "Powiadomienie Discord o rundzie",
   SCHEDULE_SET: "Ustawienie terminu meczu",
+  DEMO_SEEDED: "Wczytanie danych demo",
+  DEMO_CLEARED: "Usunięcie danych demo",
 };
 
 export async function logAction(

@@ -20,6 +20,7 @@ const LINKS: { href: string; label: string; admin?: boolean }[] = [
   { href: "/admin/ogloszenia", label: "Ogłoszenia", admin: true },
   { href: "/admin/partnerzy", label: "Partnerzy", admin: true },
   { href: "/admin/discord", label: "Discord", admin: true },
+  { href: "/admin/statystyki", label: "Statystyki", admin: true },
   { href: "/admin/log", label: "Log akcji" },
 ];
 

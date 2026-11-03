@@ -230,7 +230,6 @@ export function AvailabilityCalendar({
           <table className="w-full min-w-[640px] border-collapse text-xs select-none" onTouchMove={onTouchMove}>
             <thead className="sticky top-0 z-10">
               <tr>
-                <th className="w-14 bg-[#24180a] p-1" />
                 {DAYS.map((_, d) => (
                   <th key={d} className="bg-[#24180a] p-1.5 font-display text-gold-light">
                     {dayLabel(d)}
@@ -241,11 +240,11 @@ export function AvailabilityCalendar({
             <tbody>
               {Array.from({ length: SLOTS }, (_, s) => (
                 <tr key={s}>
-                  <th className={`pr-2 text-right font-normal text-cream-dim ${s % 2 ? "opacity-0" : ""}`}>{`${String(Math.floor(s / 2)).padStart(2, "0")}:00`}</th>
                   {DAYS.map((_, d) => {
                     const key = `${d}:${s}`;
                     const on = cells.has(key);
                     const past = cellStart(week, d, s) + 30 * 60_000 <= now;
+                    const time = `${Math.floor(s / 2)}:${s % 2 ? "30" : "00"}`;
                     return (
                       <td
                         key={key}
@@ -253,11 +252,18 @@ export function AvailabilityCalendar({
                         onMouseDown={past ? undefined : () => begin(key)}
                         onMouseEnter={past ? undefined : () => enter(key)}
                         onTouchStart={past ? undefined : () => begin(key)}
-                        className={`h-5 border-r border-b ${s % 2 ? "border-b-gold/15" : "border-b-black/40"} border-r-black/50 ${
-                          past ? "bg-black/40" : on ? "cursor-pointer bg-emerald-light/80 hover:bg-emerald-light" : "cursor-pointer bg-white/[0.03] hover:bg-gold/20"
+                        className={`group h-5 border-r border-b text-center font-display text-[13px] leading-none tabular-nums ${s % 2 ? "border-b-gold/15" : "border-b-black/40"} border-r-black/50 ${
+                          past
+                            ? "bg-black/40"
+                            : on
+                              ? "cursor-pointer bg-emerald-light/80 font-bold text-white hover:bg-emerald-light"
+                              : "cursor-pointer bg-white/[0.03] text-cream-dim/55 hover:bg-[#b0643a] hover:text-white"
                         }`}
-                        aria-label={`${dayLabel(d)} ${Math.floor(s / 2)}:${s % 2 ? "30" : "00"} ${on ? "dostępny" : "niedostępny"}`}
-                      />
+                        aria-label={`${dayLabel(d)} ${time} ${on ? "dostępny" : "niedostępny"}`}
+                      >
+                        {/* godzina w każdym polu – nie trzeba szukać osi po lewej; pełne godziny zawsze, półgodziny po najechaniu */}
+                        {!past && <span className={`pointer-events-none ${s % 2 ? "text-[11px] opacity-0 group-hover:opacity-100" : ""}`}>{time}</span>}
+                      </td>
                     );
                   })}
                 </tr>

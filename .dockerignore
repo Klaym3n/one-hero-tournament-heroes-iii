@@ -8,3 +8,4 @@ node_modules
 tests
 *.md
 !public/assets/README.md
+logs

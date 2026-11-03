@@ -5,6 +5,7 @@ import { upsertDiscordUser } from "@/lib/auth/users";
 import { createSession } from "@/lib/auth/session";
 import { env } from "@/lib/env";
 import { safeNext } from "@/lib/safe-redirect";
+import { log } from "@/lib/log";
 
 export async function GET(req: NextRequest) {
   // konfiguracja jest czytana w czasie żądania (zmienne środowiskowe kontenera), nigdy przy buildzie
@@ -19,6 +20,7 @@ export async function GET(req: NextRequest) {
   store.delete("oauth_next");
 
   if (!code || !state || !expected || state !== expected) {
+    log.warn("auth", `odrzucone logowanie Discord – nieprawidłowy stan OAuth${req.nextUrl.searchParams.get("error") ? ` (${req.nextUrl.searchParams.get("error")})` : ""}`);
     return NextResponse.redirect(new URL("/logowanie?blad=stan", base));
   }
   try {
@@ -28,11 +30,15 @@ export async function GET(req: NextRequest) {
       { discordId: me.id, username: me.username, globalName: me.global_name, avatarUrl: avatarUrl(me) },
       { accessToken: token.access_token, expiresIn: token.expires_in },
     );
-    if (user.banned) return NextResponse.redirect(new URL("/logowanie?blad=ban", base));
+    if (user.banned) {
+      log.warn("auth", "próba logowania zbanowanego konta", user);
+      return NextResponse.redirect(new URL("/logowanie?blad=ban", base));
+    }
     await createSession(user.id);
+    log.info("auth", user.created ? "nowe konto – pierwsze logowanie przez Discord" : "zalogował(a) się przez Discord", user);
     return NextResponse.redirect(new URL(next, base));
   } catch (err) {
-    console.error("[auth] Discord callback", err);
+    log.error("auth", "błąd logowania przez Discord", err);
     return NextResponse.redirect(new URL("/logowanie?blad=discord", base));
   }
 }

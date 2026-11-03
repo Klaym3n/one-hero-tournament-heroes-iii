@@ -7,6 +7,9 @@ import { db } from "@/db";
 import { notifications } from "@/db/schema";
 import { requireUser } from "@/lib/authz";
 import { parseWarsawLocal } from "@/lib/time";
+import { log } from "@/lib/log";
+import { fmtDate, fmtDateTime } from "@/lib/labels";
+import { matchLogLabel } from "./queries";
 import { run, ServiceError } from "./errors";
 import * as T from "./tournament";
 import * as M from "./matches";
@@ -19,6 +22,8 @@ export async function registerAction(input: { nick: string; acceptRules: boolean
     const user = await requireUser();
     const parsed = z.object({ nick: z.string().max(40), acceptRules: z.boolean(), acceptPrivacy: z.boolean() }).parse(input);
     const res = await T.register(user, parsed);
+    if (res.status === "registered") log.info("zapisy", `zapisał(a) się do turnieju jako „${parsed.nick.trim()}”`, user);
+    else log.info("zapisy", "zapis wstrzymany – konto nie jest na serwerze Discord", user);
     refresh();
     return res;
   });
@@ -28,6 +33,7 @@ export async function withdrawAction() {
   return run(async () => {
     const user = await requireUser();
     await T.withdraw(user);
+    log.info("zapisy", "wypisał(a) się z turnieju", user);
     refresh();
   }, "Wypisano z turnieju.");
 }
@@ -45,6 +51,7 @@ export async function updateProfileAction(input: { nick?: string; youtubeUrl?: s
       })
       .parse(input);
     await T.updateProfile(user, parsed);
+    log.info("profil", "zaktualizował(a) profil", user);
     refresh();
   }, "Zapisano profil.");
 }
@@ -53,6 +60,7 @@ export async function submitReportAction(matchId: string, report: unknown) {
   return run(async () => {
     const user = await requireUser();
     const id = await M.submitReport(user, uuid.parse(matchId), report);
+    log.info("mecz", `zgłosił(a) wynik: ${await matchLogLabel({ reportId: id })}`, user);
     refresh();
     return id;
   }, "Raport wysłany. Przeciwnik otrzymał prośbę o potwierdzenie.");
@@ -62,6 +70,7 @@ export async function acceptReportAction(reportId: string) {
   return run(async () => {
     const user = await requireUser();
     await M.acceptReport(user, uuid.parse(reportId));
+    log.info("mecz", `potwierdził(a) wynik: ${await matchLogLabel({ reportId })}`, user);
     refresh();
   }, "Wynik zatwierdzony.");
 }
@@ -70,6 +79,7 @@ export async function disputeReportAction(reportId: string, reason: string) {
   return run(async () => {
     const user = await requireUser();
     await M.disputeReport(user, uuid.parse(reportId), z.string().max(1000).parse(reason));
+    log.info("mecz", `zgłosił(a) spór: ${await matchLogLabel({ reportId })} – „${reason.trim().slice(0, 200)}”`, user);
     refresh();
   }, "Zgłoszono spór. Moderator rozstrzygnie sprawę.");
 }
@@ -83,6 +93,7 @@ export async function setScheduleAction(matchId: string, local: string | null) {
       if (!when) throw new ServiceError("Nieprawidłowa data.");
     }
     await M.setSchedule(user, uuid.parse(matchId), when);
+    log.info("terminy", `${when ? `ustawił(a) termin ${fmtDateTime(when)}` : "usunął(-ęła) termin"}: ${await matchLogLabel({ matchId })}`, user);
     refresh();
   }, "Zapisano termin meczu.");
 }
@@ -92,6 +103,7 @@ export async function setScheduleFromProposalAction(matchId: string, startsAtIso
     const user = await requireUser();
     const when = new Date(z.string().datetime().parse(startsAtIso));
     await M.setSchedule(user, uuid.parse(matchId), when);
+    log.info("terminy", `wybrał(a) proponowany termin ${fmtDateTime(when)}: ${await matchLogLabel({ matchId })}`, user);
     refresh();
   }, "Termin ustawiony.");
 }
@@ -107,6 +119,8 @@ export async function saveAvailabilityAction(fromIso: string, toIso: string, int
       })
       .parse({ from: fromIso, to: toIso, intervals });
     await S.saveAvailability(user, new Date(parsed.from), new Date(parsed.to), parsed.intervals);
+    const hours = parsed.intervals.reduce((sum, i) => sum + (i.end - i.start), 0) / 3_600_000;
+    log.info("dostępność", `zapisał(a) dostępność na tydzień od ${fmtDate(parsed.from)}: ${hours} h w ${parsed.intervals.length} przedziałach`, user);
   }, "Zapisano dostępność.");
 }
 

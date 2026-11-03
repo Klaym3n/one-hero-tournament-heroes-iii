@@ -9,6 +9,8 @@ import { groupVariants, loadGroupStandings } from "@/server/tournament";
 import { playersById } from "@/server/queries";
 import { PHASE_LABELS } from "@/lib/labels";
 import type { Phase } from "@/db/schema";
+import { DemoControls } from "@/components/admin/DemoControls";
+import { DEMO_MAX_PLAYERS, demoDataEnabled } from "@/server/demo";
 
 const TRANSITIONS: Partial<Record<Phase, { to: Phase; label: string; confirm: string; primary?: boolean }[]>> = {
   DRAFT: [{ to: "REGISTRATION_OPEN", label: "Otwórz zapisy", confirm: "Otworzyć zapisy do turnieju?", primary: true }],
@@ -46,6 +48,12 @@ export default async function AdminTournamentPage() {
         </ol>
         <PhaseButtons transitions={TRANSITIONS[t.phase] ?? []} />
       </Frame>
+
+      {demoDataEnabled() && (
+        <Frame title="Dane demonstracyjne">
+          <DemoControls phase={t.phase} max={DEMO_MAX_PLAYERS} />
+        </Frame>
+      )}
 
       {t.phase === "REGISTRATION_CLOSED" && (
         <Frame title="Losowanie grup">

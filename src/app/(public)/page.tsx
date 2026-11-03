@@ -4,8 +4,7 @@ import { Frame, Empty } from "@/components/ui/Frame";
 import { Markdown } from "@/components/ui/Markdown";
 import { MatchRow } from "@/components/game/MatchRow";
 import { LiveRefresh } from "@/components/LiveRefresh";
-import { getPartners, getTournament } from "@/lib/tournament/current";
-import { PartnersSection } from "@/components/layout/PartnersSection";
+import { getTournament } from "@/lib/tournament/current";
 import { getSessionUser } from "@/lib/auth/session";
 import { getAnnouncements, getParticipantByUser, recentResults, upcomingScheduled } from "@/server/queries";
 import { PHASE_LABELS, fmtDate } from "@/lib/labels";
@@ -13,12 +12,11 @@ import { PHASE_LABELS, fmtDate } from "@/lib/labels";
 export default async function HomePage() {
   await connection();
   const t = await getTournament();
-  const [user, news, upcoming, results, partners] = await Promise.all([
+  const [user, news, upcoming, results] = await Promise.all([
     getSessionUser(),
     getAnnouncements(t.id, 5),
     upcomingScheduled(t.id),
     recentResults(t.id),
-    getPartners(t.id),
   ]);
   const me = user ? await getParticipantByUser(t.id, user.id) : null;
   const registered = me?.status === "ACTIVE";
@@ -93,7 +91,6 @@ export default async function HomePage() {
         </div>
       </div>
 
-      <PartnersSection partners={partners} invite={process.env.DISCORD_INVITE_URL} />
     </div>
   );
 }

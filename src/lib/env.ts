@@ -13,12 +13,14 @@ const schema = z.object({
   DISCORD_INVITE_URL: z.string().default(""),
   ADMIN_DISCORD_IDS: z.string().default(""),
   DEV_LOGIN: z.string().default("false"),
+  ALLOW_DEMO_DATA: z.string().default("false"),
 });
 
 type Env = z.infer<typeof schema> & {
   adminDiscordIds: string[];
   devLoginEnabled: boolean;
   discordBotConfigured: boolean;
+  demoDataEnabled: boolean;
 };
 
 let cached: Env | null = null;
@@ -35,6 +37,8 @@ export function env(): Env {
       .filter(Boolean),
     devLoginEnabled: parsed.NODE_ENV !== "production" && parsed.DEV_LOGIN === "true",
     discordBotConfigured: Boolean(parsed.DISCORD_BOT_TOKEN && parsed.DISCORD_GUILD_ID),
+    // celowo działa także w produkcji (NODE_ENV) – włączane tylko na serwerze testowym
+    demoDataEnabled: parsed.ALLOW_DEMO_DATA === "true",
   };
   return cached;
 }

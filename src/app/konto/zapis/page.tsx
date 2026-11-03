@@ -5,7 +5,7 @@ import { Frame } from "@/components/ui/Frame";
 import { RegisterForm } from "@/components/account/RegisterForm";
 import { pageRequireUser } from "@/lib/authz";
 import { getTournament } from "@/lib/tournament/current";
-import { getParticipantByUser } from "@/server/queries";
+import { getParticipantByUser, getUserProfile } from "@/server/queries";
 
 export const metadata: Metadata = { title: "Zapis do turnieju" };
 
@@ -13,7 +13,7 @@ export default async function RegisterPage() {
   await connection();
   const user = await pageRequireUser("/konto/zapis");
   const t = await getTournament();
-  const me = await getParticipantByUser(t.id, user.id);
+  const [me, profile] = await Promise.all([getParticipantByUser(t.id, user.id), getUserProfile(user.id)]);
   if (me?.status === "ACTIVE") redirect("/konto");
 
   return (
@@ -23,7 +23,7 @@ export default async function RegisterPage() {
       ) : me?.status === "BANNED" ? (
         <p className="text-center">Twoje konto zostało wykluczone z turnieju.</p>
       ) : (
-        <RegisterForm defaultNick={me?.nick ?? user.discordGlobalName ?? user.discordUsername} />
+        <RegisterForm defaultNick={me?.nick ?? profile?.nick ?? user.discordGlobalName ?? user.discordUsername} />
       )}
     </Frame>
   );

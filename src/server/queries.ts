@@ -15,12 +15,14 @@ import {
   matches,
   matchRevisions,
   notifications,
+  pageViews,
   participants,
   slotProposals,
   users,
   type Match,
 } from "@/db/schema";
 import { roundName } from "@/lib/tournament/bracket";
+import { MATCH_STATUS_LABELS } from "@/lib/labels";
 import { isFinished } from "./matches";
 
 export type PlayerLite = { id: string; nick: string; avatarUrl: string | null; status: string; discordUsername?: string };
@@ -184,6 +186,15 @@ export async function getParticipantByUser(tournamentId: string, userId: string)
     .from(participants)
     .where(and(eq(participants.tournamentId, tournamentId), eq(participants.userId, userId)));
   return p ?? null;
+}
+
+/** Profil konta (nick, linki, opis) – edytowalny także przez osoby niezapisane do turnieju. */
+export async function getUserProfile(userId: string) {
+  const [u] = await db
+    .select({ nick: users.nick, youtubeUrl: users.youtubeUrl, twitchUrl: users.twitchUrl, kickUrl: users.kickUrl, bio: users.bio })
+    .from(users)
+    .where(eq(users.id, userId));
+  return u ?? null;
 }
 
 export async function getPlayerProfile(participantId: string) {
@@ -455,4 +466,66 @@ export async function scheduleList(tournamentId: string) {
 
 export async function outboxRecent(limit = 50) {
   return db.select().from(discordOutbox).orderBy(desc(discordOutbox.createdAt)).limit(limit);
+}
+
+/** Krótki opis meczu do dziennika zdarzeń, np. „Kowal vs Nowak 2:1 (Zatwierdzony) #1a2b3c4d”. Nigdy nie rzuca. */
+export async function matchLogLabel(ref: { matchId?: string; reportId?: string }): Promise<string> {
+  try {
+    let matchId = ref.matchId;
+    if (!matchId && ref.reportId) {
+      const [r] = await db.select({ matchId: matchReports.matchId }).from(matchReports).where(eq(matchReports.id, ref.reportId));
+      matchId = r?.matchId;
+    }
+    const [m] = matchId ? await db.select().from(matches).where(eq(matches.id, matchId)) : [];
+    if (!m) return `#${(matchId ?? ref.reportId ?? "?").slice(0, 8)}`;
+    const ps = await playersById([m.playerAId, m.playerBId]);
+    const nick = (id: string | null) => (id && ps.get(id)?.nick) || "?";
+    return `${nick(m.playerAId)} vs ${nick(m.playerBId)} ${m.scoreA}:${m.scoreB} (${MATCH_STATUS_LABELS[m.status]}) #${m.id.slice(0, 8)}`;
+  } catch {
+    return `#${(ref.matchId ?? ref.reportId ?? "?").slice(0, 8)}`;
+  }
+}
+
+// ---------- Statystyki odwiedzin (panel administratora) ----------
+const WARSAW_TODAY = sql`(date_trunc('day', now() at time zone 'Europe/Warsaw') at time zone 'Europe/Warsaw')`;
+
+export async function siteStats(days = 30) {
+  const since = sql`now() - make_interval(days => ${days})`;
+  const day = sql<string>`to_char(${pageViews.createdAt} at time zone 'Europe/Warsaw', 'YYYY-MM-DD')`;
+  const [totals] = await db
+    .select({
+      today: sql<number>`count(*) filter (where ${pageViews.createdAt} >= ${WARSAW_TODAY})::int`,
+      todayVisitors: sql<number>`count(distinct ${pageViews.visitor}) filter (where ${pageViews.createdAt} >= ${WARSAW_TODAY})::int`,
+      week: sql<number>`count(*) filter (where ${pageViews.createdAt} >= now() - interval '7 days')::int`,
+      month: sql<number>`count(*) filter (where ${pageViews.createdAt} >= now() - interval '30 days')::int`,
+      all: sql<number>`count(*)::int`,
+      mobile: sql<number>`count(*) filter (where ${pageViews.mobile} and ${pageViews.createdAt} >= now() - interval '30 days')::int`,
+      loggedIn: sql<number>`count(distinct ${pageViews.userId}) filter (where ${pageViews.createdAt} >= now() - interval '30 days')::int`,
+    })
+    .from(pageViews);
+  const [daily, pages, referrers] = await Promise.all([
+    db
+      .select({ day, views: sql<number>`count(*)::int`, visitors: sql<number>`count(distinct ${pageViews.visitor})::int` })
+      .from(pageViews)
+      .where(sql`${pageViews.createdAt} >= ${since}`)
+      .groupBy(day)
+      .orderBy(day),
+    db
+      .select({ path: pageViews.path, views: sql<number>`count(*)::int`, visitors: sql<number>`count(distinct ${pageViews.visitor})::int` })
+      .from(pageViews)
+      .where(sql`${pageViews.createdAt} >= ${since}`)
+      .groupBy(pageViews.path)
+      .orderBy(sql`count(*) desc`)
+      .limit(15),
+    db
+      .select({ referrer: pageViews.referrer, views: sql<number>`count(*)::int` })
+      .from(pageViews)
+      .where(and(sql`${pageViews.createdAt} >= ${since}`, isNotNull(pageViews.referrer)))
+      .groupBy(pageViews.referrer)
+      .orderBy(sql`count(*) desc`)
+      .limit(10),
+  ]);
+  // odwiedzający liczeni per dzień (skrót zmienia się codziennie), więc suma z wielu dni to „wizyty dzienne”
+  const visitorDays = daily.reduce((s, d) => s + d.visitors, 0);
+  return { totals, daily, pages, referrers, visitorDays };
 }

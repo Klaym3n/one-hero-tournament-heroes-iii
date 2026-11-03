@@ -2,6 +2,22 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { CoffeeIcon, DiscordIcon } from "@/components/ui/icons";
+import { PartnersSection } from "@/components/layout/PartnersSection";
+import { getPartners, getTournament } from "@/lib/tournament/current";
+import { log } from "@/lib/log";
+
+async function FooterPartners() {
+  await connection();
+  let partners;
+  try {
+    partners = await getPartners((await getTournament()).id);
+  } catch (e) {
+    // stopka nie może wywrócić strony (np. strony błędu przy niedostępnej bazie)
+    log.error("stopka", "nie udało się wczytać partnerów", e);
+    return null;
+  }
+  return <PartnersSection partners={partners} invite={process.env.DISCORD_INVITE_URL || undefined} />;
+}
 
 /** Link czytany w czasie żądania – zmienna środowiskowa jest dostępna dopiero w kontenerze. */
 async function DiscordLink() {
@@ -20,6 +36,9 @@ const SUPPORT_URL = "https://buycoffee.to/orzechmc";
 export function SiteFooter() {
   return (
     <footer className="leather mt-10 border-t border-black shadow-[0_-1px_0_var(--gold-dark)]">
+      <Suspense fallback={null}>
+        <FooterPartners />
+      </Suspense>
       {/* organizator i wsparcie */}
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 border-b border-gold-dark/40 px-4 py-6 text-center sm:flex-row sm:justify-between sm:text-left">
         <div className="flex flex-col items-center gap-1 sm:items-start">

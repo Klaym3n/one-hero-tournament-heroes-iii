@@ -2,6 +2,7 @@ import "server-only";
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { env } from "@/lib/env";
+import { log } from "@/lib/log";
 import { CANNOT_DM, DiscordError, sendChannelMessage, sendDirectMessage } from "./api";
 
 const MAX_ATTEMPTS = 6;
@@ -55,6 +56,7 @@ export async function processOutbox(batch = 20): Promise<number> {
         const permanent = e instanceof DiscordError && [400, 401, 403, 404].includes(e.status);
         if (permanent || attempts >= MAX_ATTEMPTS) {
           await tx.execute(sql`update discord_outbox set failed_at = now(), attempts = ${attempts}, last_error = ${err} where id = ${row.id}`);
+          log.warn("discord", `nie wysłano wiadomości ${row.kind === "DM" ? "prywatnej" : "na kanał"} (${row.target}) po ${attempts} próbach: ${err}`);
         } else {
           const backoffSec = 30 * 2 ** attempts;
           await tx.execute(sql`
@@ -65,5 +67,6 @@ export async function processOutbox(batch = 20): Promise<number> {
       }
     }
   });
+  if (sent) log.info("discord", `wysłano wiadomości: ${sent}`);
   return sent;
 }

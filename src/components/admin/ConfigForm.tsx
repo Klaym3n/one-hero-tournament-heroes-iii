@@ -126,12 +126,22 @@ const CONTENT_FIELDS = [
 ] as const;
 type ContentKey = (typeof CONTENT_FIELDS)[number][0];
 
-export function ContentEditor({ initial }: { initial: Record<ContentKey, string> }) {
+type RulesMeta = { rulesVersionLabel: string; rulesUpdatedAt: string; autoVersion: number };
+
+export function ContentEditor({ initial, rulesMeta }: { initial: Record<ContentKey, string>; rulesMeta: RulesMeta }) {
   const [tab, setTab] = useState<ContentKey>("infoMd");
   const [v, setV] = useState(initial);
+  const [meta, setMeta] = useState(rulesMeta);
   const [preview, setPreview] = useState(false);
   const { pending, feedback, exec } = useAction();
-  const changed = v[tab] !== initial[tab];
+  const metaChanged = meta.rulesVersionLabel !== rulesMeta.rulesVersionLabel || meta.rulesUpdatedAt !== rulesMeta.rulesUpdatedAt;
+  const changed = v[tab] !== initial[tab] || (tab === "rulesMd" && metaChanged);
+  const save = () =>
+    exec(() =>
+      updateConfigAction(
+        tab === "rulesMd" ? { rulesMd: v.rulesMd, rulesVersionLabel: meta.rulesVersionLabel, rulesUpdatedAt: meta.rulesUpdatedAt } : { [tab]: v[tab] },
+      ),
+    );
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-1" role="tablist">
@@ -145,12 +155,41 @@ export function ContentEditor({ initial }: { initial: Record<ContentKey, string>
       <div className="flex items-center justify-between">
         <p className="text-xs text-cream-dim">
           Format Markdown (nagłówki #, listy -, **pogrubienie**, [link](https://…)).{" "}
-          {(tab === "rulesMd" || tab === "privacyMd") && "Zmiana treści podnosi numer wersji dokumentu."}
+          {tab === "privacyMd" && "Zmiana treści podnosi numer wersji dokumentu."}
         </p>
         <label className="flex items-center gap-2 text-xs">
           <input type="checkbox" checked={preview} onChange={(e) => setPreview(e.target.checked)} className="accent-[var(--gold)]" /> Podgląd
         </label>
       </div>
+      {tab === "rulesMd" && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="rules-version">
+              Wersja regulaminu
+            </label>
+            <input
+              id="rules-version"
+              className="input"
+              value={meta.rulesVersionLabel}
+              onChange={(e) => setMeta({ ...meta, rulesVersionLabel: e.target.value })}
+              maxLength={30}
+              placeholder={`np. 1.2 (puste = automatyczna: ${rulesMeta.autoVersion})`}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="rules-updated">
+              Data ostatniej aktualizacji
+            </label>
+            <div className="flex gap-2">
+              <input id="rules-updated" className="input" type="date" value={meta.rulesUpdatedAt} onChange={(e) => setMeta({ ...meta, rulesUpdatedAt: e.target.value })} />
+              <button type="button" className="btn btn-sm btn-ghost shrink-0" onClick={() => setMeta({ ...meta, rulesUpdatedAt: new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Warsaw" }).format(new Date()) })}>
+                Dziś
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-cream-dim sm:col-span-2">Wersja i data są wyświetlane pod regulaminem. Puste pole daty ukrywa informację o aktualizacji.</p>
+        </div>
+      )}
       <div className={preview ? "grid gap-4 lg:grid-cols-2" : ""}>
         <textarea className="textarea min-h-[420px] font-mono text-sm" value={v[tab]} onChange={(e) => setV({ ...v, [tab]: e.target.value })} aria-label="Treść" />
         {preview && (
@@ -159,7 +198,7 @@ export function ContentEditor({ initial }: { initial: Record<ContentKey, string>
           </div>
         )}
       </div>
-      <button className="btn btn-primary" disabled={pending || !changed} onClick={() => exec(() => updateConfigAction({ [tab]: v[tab] }))}>
+      <button className="btn btn-primary" disabled={pending || !changed} onClick={save}>
         Zapisz „{CONTENT_FIELDS.find(([k]) => k === tab)![1]}”
       </button>
       <FeedbackBox feedback={feedback} />

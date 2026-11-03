@@ -27,6 +27,7 @@ import { addGuildMember, createInvite, isGuildMember, splitMessage } from "@/lib
 import { PHASE_LABELS } from "@/lib/labels";
 import type { SessionUser } from "@/lib/auth/session";
 import { hasRole } from "@/lib/authz";
+import { log } from "@/lib/log";
 import { ServiceError } from "./errors";
 import { applyResult, isFinished } from "./matches";
 
@@ -56,7 +57,7 @@ async function ensureGuildMembership(user: SessionUser): Promise<RegisterResult 
       await addGuildMember(user.discordId, token);
       return null;
     } catch (err) {
-      console.warn("[register] auto-join failed", err);
+      log.warn("zapisy", "nie udało się automatycznie dodać do serwera Discord", user, err);
     }
   }
   let inviteUrl: string | null = e.DISCORD_INVITE_URL || null;
@@ -88,6 +89,10 @@ export async function register(user: SessionUser, input: { nick: string; acceptR
     .where(and(eq(participants.tournamentId, t.id), sql`lower(${participants.nick}) = lower(${nick})`, existing ? ne(participants.id, existing.id) : sql`true`));
   if (taken) throw new ServiceError("Ten nick jest już zajęty.");
 
+  const [profile] = await db
+    .select({ youtubeUrl: users.youtubeUrl, twitchUrl: users.twitchUrl, kickUrl: users.kickUrl, bio: users.bio })
+    .from(users)
+    .where(eq(users.id, user.id));
   const now = new Date();
   const values = {
     nick,
@@ -98,7 +103,8 @@ export async function register(user: SessionUser, input: { nick: string; acceptR
     privacyVersion: t.privacyVersion,
   };
   if (existing) await db.update(participants).set(values).where(eq(participants.id, existing.id));
-  else await db.insert(participants).values({ ...values, tournamentId: t.id, userId: user.id });
+  else await db.insert(participants).values({ ...values, ...profile, tournamentId: t.id, userId: user.id });
+  await db.update(users).set({ nick }).where(eq(users.id, user.id));
   await publish(["players"]);
   return { status: "registered" };
 }
@@ -122,7 +128,7 @@ const URL_RULES = {
 export async function updateProfile(user: SessionUser, input: { nick?: string; youtubeUrl?: string; twitchUrl?: string; kickUrl?: string; bio?: string }) {
   const t = await getTournament();
   const [p] = await db.select().from(participants).where(and(eq(participants.tournamentId, t.id), eq(participants.userId, user.id)));
-  if (!p) throw new ServiceError("Najpierw zapisz się do turnieju.");
+  const [u] = await db.select({ nick: users.nick }).from(users).where(eq(users.id, user.id));
   const patch: Record<string, string | null> = {};
   for (const key of Object.keys(URL_RULES) as (keyof typeof URL_RULES)[]) {
     const v = input[key]?.trim();
@@ -142,19 +148,27 @@ export async function updateProfile(user: SessionUser, input: { nick?: string; y
     patch[key] = u.toString();
   }
   patch.bio = input.bio?.trim().slice(0, 300) || null;
-  if (input.nick !== undefined && input.nick.trim() !== p.nick) {
-    if (t.phase !== "REGISTRATION_OPEN" && t.phase !== "DRAFT") throw new ServiceError("Nick można zmienić tylko w trakcie zapisów.");
-    const nick = input.nick.trim().replace(/\s+/g, " ");
-    if (!NICK_RE.test(nick)) throw new ServiceError("Nick musi mieć 2–24 znaki (litery, cyfry, spacja, _ . -).");
-    const [taken] = await db
-      .select({ id: participants.id })
-      .from(participants)
-      .where(and(eq(participants.tournamentId, t.id), sql`lower(${participants.nick}) = lower(${nick})`, ne(participants.id, p.id)));
-    if (taken) throw new ServiceError("Ten nick jest już zajęty.");
-    patch.nick = nick;
+  const nick = input.nick?.trim().replace(/\s+/g, " ");
+  if (nick !== undefined && nick !== (p?.nick ?? u?.nick ?? "")) {
+    if (!p && !nick) {
+      patch.nick = null;
+    } else {
+      // nick zgłoszenia jest zamrażany po zamknięciu zapisów; profil konta bez zgłoszenia można zmieniać zawsze
+      if (p && t.phase !== "REGISTRATION_OPEN" && t.phase !== "DRAFT") throw new ServiceError("Nick można zmienić tylko w trakcie zapisów.");
+      if (!NICK_RE.test(nick)) throw new ServiceError("Nick musi mieć 2–24 znaki (litery, cyfry, spacja, _ . -).");
+      const [taken] = await db
+        .select({ id: participants.id })
+        .from(participants)
+        .where(and(eq(participants.tournamentId, t.id), sql`lower(${participants.nick}) = lower(${nick})`, ne(participants.userId, user.id)));
+      if (taken) throw new ServiceError("Ten nick jest już zajęty.");
+      patch.nick = nick;
+    }
   }
-  await db.update(participants).set(patch).where(eq(participants.id, p.id));
-  await publish(["players"]);
+  await db.update(users).set(patch).where(eq(users.id, user.id));
+  if (p) {
+    await db.update(participants).set(patch).where(eq(participants.id, p.id));
+    await publish(["players"]);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -523,6 +537,8 @@ export type ConfigInput = Partial<
     | "thirdPlaceBestOf"
     | "minSlotMinutes"
     | "currentRoundLabel"
+    | "rulesVersionLabel"
+    | "rulesUpdatedAt"
   >
 >;
 

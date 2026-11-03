@@ -8,7 +8,7 @@ import { LiveRefresh } from "@/components/LiveRefresh";
 import { NotificationsList } from "@/components/account/NotificationsList";
 import { pageRequireUser } from "@/lib/authz";
 import { getTournament } from "@/lib/tournament/current";
-import { getMyMatches, getNotifications, getParticipantByUser } from "@/server/queries";
+import { getMyMatches, getNotifications, getParticipantByUser, getUserProfile } from "@/server/queries";
 import { PHASE_LABELS, ROLE_LABELS } from "@/lib/labels";
 
 export const metadata: Metadata = { title: "Moje konto" };
@@ -18,7 +18,7 @@ export default async function AccountPage() {
   const user = await pageRequireUser("/konto");
   const t = await getTournament();
   const me = await getParticipantByUser(t.id, user.id);
-  const [matches, notes] = await Promise.all([me ? getMyMatches(me.id) : null, getNotifications(user.id, 20)]);
+  const [matches, notes, profile] = await Promise.all([me ? getMyMatches(me.id) : null, getNotifications(user.id, 20), getUserProfile(user.id)]);
   const name = user.discordGlobalName ?? user.discordUsername;
   const registered = me?.status === "ACTIVE";
   const canRegister = t.phase === "REGISTRATION_OPEN" && !registered && me?.status !== "BANNED";
@@ -30,7 +30,7 @@ export default async function AccountPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <Avatar src={user.avatarUrl} name={name} size={64} />
           <div className="flex-1">
-            <h1 className="title-gold text-2xl font-black">{me?.nick ?? name}</h1>
+            <h1 className="title-gold text-2xl font-black">{me?.nick ?? profile?.nick ?? name}</h1>
             <p className="text-sm text-cream-dim">
               Discord: {user.discordUsername} · {ROLE_LABELS[user.role]} · Turniej: {PHASE_LABELS[t.phase]}
             </p>
@@ -46,11 +46,9 @@ export default async function AccountPage() {
                 Profil publiczny
               </Link>
             )}
-            {me && (
-              <Link href="/konto/ustawienia" className="btn btn-sm">
-                Ustawienia
-              </Link>
-            )}
+            <Link href="/konto/ustawienia" className="btn btn-sm">
+              Ustawienia
+            </Link>
             <Link href="/konto/dostepnosc" className="btn btn-sm">
               Dostępność
             </Link>

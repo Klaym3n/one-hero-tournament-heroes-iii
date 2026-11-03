@@ -1,5 +1,6 @@
 import { ZodError } from "zod";
 import { AuthError } from "@/lib/authz";
+import { log } from "@/lib/log";
 
 /** Błąd biznesowy z komunikatem dla użytkownika (po polsku). */
 export class ServiceError extends Error {}
@@ -17,7 +18,7 @@ export async function run<T>(fn: () => Promise<T>, message?: string): Promise<Ac
     if (e instanceof ZodError) return { ok: false, error: "Nieprawidłowe dane formularza." };
     // błędy nawigacji (redirect/notFound) muszą przejść dalej
     if (e && typeof e === "object" && "digest" in e) throw e;
-    console.error("[action]", e);
+    log.error("akcja", "nieoczekiwany błąd", e);
     return { ok: false, error: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie." };
   }
 }

@@ -127,6 +127,16 @@
             "user_editable": true,
             "rules": "nullable|string",
             "field_type": "text"
+        },
+        {
+            "name": "Dane demo (tylko serwer testowy)",
+            "description": "true = w Panel → Turniej i fazy pojawia się przycisk wczytania i usuwania danych demonstracyjnych. NIGDY nie włączaj na serwerze z prawdziwym turniejem.",
+            "env_variable": "ALLOW_DEMO_DATA",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "field_type": "text"
         }
     ]
 }

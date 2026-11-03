@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type BracketSide = { id: string; nick: string; avatarUrl: string | null } | null;
 export type BracketMatch = {
@@ -77,55 +77,118 @@ function Card({ m, hovered, onHover }: { m: BracketMatch; hovered: string | null
   );
 }
 
-/** Drabinka pojedynczej eliminacji z przewijaniem poziomym i powiększaniem. */
+const THIRD_OFFSET = 130; // odległość meczu o 3. miejsce od środka finału (px)
+const THIRD_BLOCK = 116; // wysokość podpisu + karty meczu o 3. miejsce (px)
+const GAP = 40; // odstęp między rundami (px) – w połowie biegną pionowe łączniki
+
+/** Łączniki: poziome odcinki od meczów do osi, pionowa oś łącząca parę i odcinek do meczu kolejnej rundy. */
+function Connectors({ count, height }: { count: number; height: number }) {
+  const slot = height / count;
+  const line = "absolute bg-gold-dark";
+  return (
+    <div className="pointer-events-none absolute inset-y-0 left-full" style={{ width: GAP }} aria-hidden>
+      {Array.from({ length: count }, (_, i) => (
+        <span key={i} className={`${line} left-0 h-px`} style={{ top: (i + 0.5) * slot, width: i % 2 === 0 && i + 1 >= count ? GAP : GAP / 2 }} />
+      ))}
+      {Array.from({ length: Math.floor(count / 2) }, (_, k) => (
+        <span key={k}>
+          <span className={`${line} w-px`} style={{ left: GAP / 2, top: (2 * k + 0.5) * slot, height: slot }} />
+          <span className={`${line} h-px`} style={{ left: GAP / 2, top: (2 * k + 1) * slot, width: GAP / 2 }} />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Położenie kolumn rund względem przewijanego kontenera – z getBoundingClientRect, więc działa przy dowolnym powiększeniu (CSS zoom). */
+function columnOffsets(s: HTMLElement): number[] {
+  const base = s.getBoundingClientRect().left;
+  return Array.from(s.querySelectorAll<HTMLElement>("[data-col]")).map((c) => c.getBoundingClientRect().left - base + s.scrollLeft - 20);
+}
+
+/** Drabinka pojedynczej eliminacji z przewijaniem poziomym, nawigacją między rundami i powiększaniem. */
 export function Bracket({ rounds, third }: { rounds: BracketRound[]; third: BracketMatch | null }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [edges, setEdges] = useState({ start: true, end: true });
+  const scroller = useRef<HTMLDivElement>(null);
   const firstCount = rounds[0]?.matches.length ?? 0;
   const height = Math.max(firstCount * SLOT, 2 * SLOT);
+  // mecz o 3. miejsce stoi pod finałem, lekko przesunięty w stronę półfinałów – kolumna finału musi mieć na niego miejsce
+  const thirdTop = height / 2 + THIRD_OFFSET;
+  const extra = third ? Math.max(0, thirdTop + THIRD_BLOCK - height) : 0;
+
+  const sync = useCallback(() => {
+    const s = scroller.current;
+    if (!s) return;
+    setEdges({ start: s.scrollLeft <= 4, end: s.scrollLeft + s.clientWidth >= s.scrollWidth - 4 });
+  }, []);
+
+  useEffect(() => {
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
+  }, [sync, zoom]);
+
+  // cel liczony od bieżącej pozycji przewinięcia: najbliższa kolumna zaczynająca się na lewo / na prawo od niej
+  const step = (dir: -1 | 1) => {
+    const s = scroller.current;
+    if (!s) return;
+    const offs = columnOffsets(s);
+    const target = dir > 0 ? offs.find((o) => o > s.scrollLeft + 8) : offs.findLast((o) => o < s.scrollLeft - 8);
+    s.scrollTo({ left: Math.max(0, target ?? (dir > 0 ? s.scrollWidth : 0)), behavior: "smooth" });
+  };
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-end gap-2">
-        <span className="text-xs text-cream-dim">Powiększenie</span>
-        <button className="btn btn-sm btn-icon" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))} aria-label="Pomniejsz">
-          −
-        </button>
-        <span className="w-10 text-center text-xs tabular-nums">{Math.round(zoom * 100)}%</span>
-        <button className="btn btn-sm btn-icon" onClick={() => setZoom((z) => Math.min(1.5, +(z + 0.1).toFixed(2)))} aria-label="Powiększ">
-          +
-        </button>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <nav className="flex items-center gap-2" aria-label="Przewijanie faz drabinki">
+          <button className="btn btn-sm btn-ghost" onClick={() => step(-1)} disabled={edges.start}>
+            ‹ Poprzednia faza
+          </button>
+          <button className="btn btn-sm btn-ghost" onClick={() => step(1)} disabled={edges.end}>
+            Następna faza ›
+          </button>
+        </nav>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-cream-dim">Powiększenie</span>
+          <button className="btn btn-sm btn-icon" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))} aria-label="Pomniejsz">
+            −
+          </button>
+          <span className="w-10 text-center text-xs tabular-nums">{Math.round(zoom * 100)}%</span>
+          <button className="btn btn-sm btn-icon" onClick={() => setZoom((z) => Math.min(1.5, +(z + 0.1).toFixed(2)))} aria-label="Powiększ">
+            +
+          </button>
+        </div>
       </div>
       <div className="frame-sm panel" style={{ "--panel-bg": "rgba(10, 7, 4, 0.78)" } as React.CSSProperties}>
-        <div className="scroll-x">
+        <div ref={scroller} className="scroll-x" onScroll={sync}>
         <div style={{ zoom }} className="p-5">
-          <div className="flex gap-10">
+          <div className="flex" style={{ gap: GAP }}>
             {rounds.map((r, ri) => (
-              <div key={r.round} className="flex shrink-0 flex-col">
+              <div key={r.round} data-col className="flex shrink-0 flex-col">
                 <h3 className="mb-3 text-center font-display text-sm font-bold tracking-wider text-gold-light uppercase">{r.name}</h3>
-                <div className="relative flex flex-col justify-around" style={{ height }}>
+                <div className="relative flex flex-col justify-around" style={{ height, marginBottom: ri === rounds.length - 1 ? extra : 0 }}>
                   {r.matches.map((m) => (
                     <div key={m.id} className="relative flex items-center">
                       <Card m={m} hovered={hovered} onHover={setHovered} />
-                      {ri < rounds.length - 1 && <span className="absolute top-1/2 -right-10 h-px w-10 bg-gold-dark" aria-hidden />}
                     </div>
                   ))}
+                  {ri < rounds.length - 1 && <Connectors count={r.matches.length} height={height} />}
+                  {ri === rounds.length - 1 && third && (
+                    <div className="absolute" style={{ top: thirdTop, left: -GAP / 2 }}>
+                      <p className="mb-1.5 border-t border-gold-dark/50 pt-1.5 text-center text-[11px] tracking-widest text-cream-dim uppercase">Mecz o 3. miejsce</p>
+                      <Card m={third} hovered={hovered} onHover={setHovered} />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
-            {third && (
-              <div className="flex shrink-0 flex-col">
-                <h3 className="mb-3 text-center font-display text-sm font-bold tracking-wider text-gold-light uppercase">O 3. miejsce</h3>
-                <div className="flex flex-col justify-center" style={{ height }}>
-                  <Card m={third} hovered={hovered} onHover={setHovered} />
-                </div>
-              </div>
-            )}
           </div>
         </div>
         </div>
       </div>
-      <p className="mt-2 text-center text-xs text-cream-dim sm:hidden">Przesuń w bok, aby zobaczyć całą drabinkę.</p>
+      <p className="mt-2 text-center text-xs text-cream-dim sm:hidden">Przesuń w bok lub użyj strzałek, aby zobaczyć całą drabinkę.</p>
     </div>
   );
 }

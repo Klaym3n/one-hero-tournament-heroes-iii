@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -53,6 +54,12 @@ export const users = pgTable("users", {
   // token OAuth – potrzebny do automatycznego dodania na serwer (scope guilds.join)
   discordAccessToken: text("discord_access_token"),
   discordTokenExpiresAt: ts("discord_token_expires_at"),
+  // profil uzupełniany w ustawieniach konta – przenoszony do zgłoszenia przy zapisie na turniej
+  nick: text("nick"),
+  youtubeUrl: text("youtube_url"),
+  twitchUrl: text("twitch_url"),
+  kickUrl: text("kick_url"),
+  bio: text("bio"),
   createdAt: createdAt(),
   lastLoginAt: ts("last_login_at"),
 });
@@ -100,6 +107,9 @@ export const tournaments = pgTable("tournaments", {
     other: "",
   }),
   rulesVersion: integer("rules_version").notNull().default(1),
+  // wersja i data aktualizacji regulaminu wyświetlane pod treścią (ustawiane ręcznie w panelu)
+  rulesVersionLabel: text("rules_version_label").notNull().default(""),
+  rulesUpdatedAt: date("rules_updated_at", { mode: "string" }),
   privacyVersion: integer("privacy_version").notNull().default(1),
   groupBestOf: integer("group_best_of").notNull().default(3),
   knockoutBestOf: integer("knockout_best_of").notNull().default(3),
@@ -415,6 +425,22 @@ export const partners = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("partners_tournament_idx").on(t.tournamentId, t.sortOrder)],
+);
+
+// Statystyki odwiedzin (bez ciasteczek) – widoczne tylko w panelu administratora
+export const pageViews = pgTable(
+  "page_views",
+  {
+    id: id(),
+    path: text("path").notNull(),
+    // skrót IP + przeglądarki zmieniany codziennie – liczy unikalnych odwiedzających bez ich śledzenia
+    visitor: text("visitor").notNull(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    referrer: text("referrer"),
+    mobile: boolean("mobile").notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [index("page_views_created_idx").on(t.createdAt)],
 );
 
 export const adminAuditLog = pgTable(

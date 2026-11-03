@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { processOutbox } from "@/lib/discord/outbox";
 import { scanAllProposals } from "@/server/scheduling";
+import { log } from "@/lib/log";
 
 const g = globalThis as unknown as { __jobsStarted?: boolean };
 const TICK_MS = 30_000;
@@ -27,7 +28,7 @@ export function startJobs() {
         tick++;
       });
     } catch (e) {
-      console.error("[jobs]", e);
+      log.error("jobs", "błąd zadania w tle", e);
     } finally {
       running = false;
     }
@@ -35,5 +36,5 @@ export function startJobs() {
 
   setTimeout(run, 5_000);
   setInterval(run, TICK_MS).unref?.();
-  console.log("[jobs] zadania w tle uruchomione");
+  log.info("jobs", "zadania w tle uruchomione");
 }

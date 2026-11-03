@@ -35,5 +35,5 @@ export async function upsertDiscordUser(p: Profile, token?: Token) {
   if (bootstrapAdmin && existing?.role !== "ADMIN") {
     await logAction(row.id, "ADMIN_BOOTSTRAP", { entityType: "user", entityId: row.id });
   }
-  return row;
+  return { ...row, created: !existing };
 }

@@ -5,6 +5,7 @@ import { availabilitySlots, matches, participants, slotProposals, tournaments } 
 import { commonSlots, mergeIntervals, SLOT_MS, type Interval } from "@/lib/scheduling/availability";
 import { notifyUsers } from "@/lib/notify";
 import { fmtDateTime, fmtTime } from "@/lib/labels";
+import { log } from "@/lib/log";
 import { ServiceError } from "./errors";
 import type { SessionUser } from "@/lib/auth/session";
 
@@ -77,6 +78,7 @@ export async function refreshProposalsForMatch(matchId: string, tx: DBOrTx = db)
 
   await tx.update(slotProposals).set({ notifiedAt: new Date() }).where(eq(slotProposals.id, row.id));
   const when = `${fmtDateTime(earliest.start)}–${fmtTime(earliest.end)}`;
+  log.info("terminy", `wspólny termin ${pa.nick} vs ${pb.nick}: ${when} #${m.id.slice(0, 8)}`);
   await notifyUsers([pa.userId, pb.userId], {
     type: "SLOT_FOUND",
     title: "Znaleziono wspólny termin meczu",
