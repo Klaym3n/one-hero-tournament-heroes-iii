@@ -32,7 +32,8 @@ export default async function AccountPage() {
           <div className="flex-1">
             <h1 className="title-gold text-2xl font-black">{me?.nick ?? profile?.nick ?? name}</h1>
             <p className="text-sm text-cream-dim">
-              Discord: {user.discordUsername} · {ROLE_LABELS[user.role]} · Turniej: {PHASE_LABELS[t.phase]}
+              Discord: {user.discordUsername} · {ROLE_LABELS[user.role]}
+              {t.phase !== "DRAFT" && <> · Turniej: {PHASE_LABELS[t.phase]}</>}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

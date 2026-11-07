@@ -2,6 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Frame, Empty } from "@/components/ui/Frame";
 import { Markdown } from "@/components/ui/Markdown";
+import { MarkdownFrame } from "@/components/ui/MarkdownFrame";
 import { MatchRow } from "@/components/game/MatchRow";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { getTournament } from "@/lib/tournament/current";
@@ -62,8 +63,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="grid gap-8 max-sm:grid-cols-1 lg:grid-cols-3">
-        <div className="space-y-8 lg:col-span-2">
+      {/* prawa kolumna o stałej szerokości – linie harmonogramu (np. „Otwarcie zapisów: 16 listopada 2026”) mieszczą się w jednym wierszu */}
+      <div className="grid gap-8 max-sm:grid-cols-1 lg:grid-cols-[minmax(0,1fr)_23rem]">
+        <div className="space-y-8">
           <Frame title="Aktualności">
             {news.length === 0 ? (
               <Empty>Brak ogłoszeń.</Empty>
@@ -85,18 +87,19 @@ export default async function HomePage() {
         </div>
         <div className="space-y-8">
           {preparing ? (
-            <Frame>
-              <Markdown>{t.scheduleMd || `## Harmonogram
-
-Harmonogram zostanie opublikowany wkrótce.`}</Markdown>
-            </Frame>
+            <MarkdownFrame
+              md={t.scheduleMd || "Harmonogram zostanie opublikowany wkrótce."}
+              fallbackTitle="Harmonogram"
+              bodyClassName="p-3 sm:p-4"
+              markdownClassName="text-[15px] lg:[&_li]:whitespace-nowrap"
+            />
           ) : (
             <>
               <Frame title="Nadchodzące mecze">
-                {upcoming.length === 0 ? <Empty>Brak zaplanowanych meczów.</Empty> : <div className="space-y-2">{upcoming.map((m) => <MatchRow key={m.id} m={m} />)}</div>}
+                {upcoming.length === 0 ? <Empty>Brak zaplanowanych meczów.</Empty> : <div className="space-y-2">{upcoming.map((m) => <MatchRow key={m.id} m={m} compact />)}</div>}
               </Frame>
               <Frame title="Ostatnie wyniki">
-                {results.length === 0 ? <Empty>Jeszcze nikt nie zagrał.</Empty> : <div className="space-y-2">{results.map((m) => <MatchRow key={m.id} m={m} />)}</div>}
+                {results.length === 0 ? <Empty>Jeszcze nikt nie zagrał.</Empty> : <div className="space-y-2">{results.map((m) => <MatchRow key={m.id} m={m} compact />)}</div>}
               </Frame>
             </>
           )}

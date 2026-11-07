@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Frame, PageTitle } from "@/components/ui/Frame";
-import { Markdown } from "@/components/ui/Markdown";
+import { MarkdownFrame } from "@/components/ui/MarkdownFrame";
+import { DiscordIcon } from "@/components/ui/icons";
+import { env } from "@/lib/env";
 import { getTournament } from "@/lib/tournament/current";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { GAME_SETTING_FIELDS, normalizeGameSettings } from "@/lib/tournament/game-settings";
@@ -15,6 +17,8 @@ export default async function TournamentInfoPage() {
   const settings = GAME_SETTING_FIELDS.map((f) => [f.label, s[f.key]] as const).filter(([, v]) => v);
   // ustawienia gry pokazujemy dopiero od otwarcia zapisów
   const showSettings = t.phase !== "DRAFT" && settings.length > 0;
+  // w fazie przygotowań zapraszamy na serwer Discord (ogłoszenia o otwarciu zapisów)
+  const invite = t.phase === "DRAFT" ? env().DISCORD_INVITE_URL : "";
 
   return (
     <div className="space-y-8">
@@ -22,37 +26,33 @@ export default async function TournamentInfoPage() {
       <PageTitle subtitle={t.tagline}>{t.name}</PageTitle>
       <div className="grid gap-8 max-sm:grid-cols-1 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
-          {t.infoMd && (
-            <Frame>
-              <Markdown>{t.infoMd}</Markdown>
-            </Frame>
-          )}
+          {t.infoMd && <MarkdownFrame md={t.infoMd} />}
           {showSettings && (
-            <Frame>
-              {/* nagłówek w tym samym stylu co sekcje markdown (## …) */}
-              <div className="prose-h3">
-                <h2>Ustawienia gry</h2>
-                <dl className="divide-y divide-gold/10">
-                  {settings.map(([k, v]) => (
-                    <div key={k} className="grid gap-1 py-2.5 max-sm:grid-cols-1 sm:grid-cols-3">
-                      <dt className="text-sm font-semibold text-cream-dim">{k}</dt>
-                      <dd className="sm:col-span-2">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
+            <Frame title="Ustawienia gry">
+              <dl className="divide-y divide-gold/10">
+                {settings.map(([k, v]) => (
+                  <div key={k} className="grid gap-1 py-2.5 max-sm:grid-cols-1 sm:grid-cols-3">
+                    <dt className="text-sm font-semibold text-cream-dim">{k}</dt>
+                    <dd className="sm:col-span-2">{v}</dd>
+                  </div>
+                ))}
+              </dl>
             </Frame>
           )}
-          {t.scheduleMd && (
-            <Frame>
-              <Markdown>{t.scheduleMd}</Markdown>
-            </Frame>
-          )}
+          {t.scheduleMd && <MarkdownFrame md={t.scheduleMd} />}
         </div>
         <div className="space-y-8">
-          {t.prizesMd && (
-            <Frame>
-              <Markdown>{t.prizesMd}</Markdown>
+          {t.prizesMd && <MarkdownFrame md={t.prizesMd} />}
+          {invite && (
+            <Frame title="Dołącz do społeczności">
+              <div className="space-y-4 text-sm">
+                <p>Zapisy jeszcze nie ruszyły. Dołącz do naszego serwera Discord – tam jako pierwszy dowiesz się o otwarciu zapisów, harmonogramie i nagrodach.</p>
+                <p className="text-cream-dim">Konto na serwerze będzie też potrzebne do zapisu na turniej i powiadomień o meczach.</p>
+                <a href={invite} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full justify-center gap-2">
+                  <DiscordIcon size={18} />
+                  Dołącz do serwera Discord
+                </a>
+              </div>
             </Frame>
           )}
         </div>

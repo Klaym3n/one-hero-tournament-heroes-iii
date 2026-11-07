@@ -23,13 +23,11 @@ O kolejności w grupie decydują kolejno: liczba wygranych meczów, bilans gier,
 - 🥇 1. miejsce – do uzupełnienia
 - 🥈 2. miejsce – do uzupełnienia
 - 🥉 3. miejsce – do uzupełnienia`,
-  scheduleMd: `## Harmonogram
+  scheduleMd: `## Harmonogram turnieju
 
-- Zapisy: do uzupełnienia
-- Losowanie grup: do uzupełnienia
-- Faza grupowa: do uzupełnienia
-- Faza pucharowa: do uzupełnienia
-- Finał (transmisja): do uzupełnienia`,
+- Otwarcie zapisów: 16 listopada 2026
+- Start turnieju: 6 grudnia 2026
+- Faza pucharowa: I kwartał 2027`,
   rulesMd: `# Regulamin turnieju
 
 ## §1. Postanowienia ogólne

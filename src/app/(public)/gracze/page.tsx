@@ -14,6 +14,18 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
   await connection();
   const { q } = await searchParams;
   const t = await getTournament();
+  // w fazie przygotowań zapisy nie ruszyły – nie pokazujemy listy ani licznika graczy
+  if (t.phase === "DRAFT") {
+    return (
+      <div>
+        <LiveRefresh topics={["players"]} />
+        <PageTitle>Gracze</PageTitle>
+        <Frame className="mx-auto max-w-xl">
+          <Empty>Zapisy do turnieju nie zostały jeszcze uruchomione.</Empty>
+        </Frame>
+      </div>
+    );
+  }
   const players = await listPlayers(t.id, q?.trim() || undefined);
   return (
     <div>
