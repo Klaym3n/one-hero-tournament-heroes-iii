@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { GameFlags } from "./PlayerFlag";
 
 export type BracketSide = { id: string; nick: string; avatarUrl: string | null } | null;
 export type BracketMatch = {
@@ -10,6 +11,9 @@ export type BracketMatch = {
   b: BracketSide;
   scoreA: number;
   scoreB: number;
+  /** kolory graczy w kolejnych grach – znane dopiero po wprowadzeniu wyniku */
+  colorsA: string[] | null;
+  colorsB: string[] | null;
   winnerId: string | null;
   status: string;
   bestOf: number;
@@ -18,8 +22,8 @@ export type BracketMatch = {
 export type BracketRound = { round: number; name: string; matches: BracketMatch[] };
 
 const SLOT = 104; // wysokość slotu meczu w pierwszej widocznej rundzie (px)
-const CARD = 208; // szerokość karty meczu (w-52)
-const FINAL_CARD = 240; // szerokość karty finału (w-60)
+const CARD = 240; // szerokość karty meczu (w-60) – miejsce na nick i flagi 24px z każdej gry
+const FINAL_CARD = 288; // szerokość karty finału (w-72) – Bo5 = do 5 flag
 const PAD = 20; // wewnętrzny odstęp drabinki (p-5)
 const THIRD_OFFSET = 130; // odległość meczu o 3. miejsce od środka finału (px)
 const THIRD_BLOCK = 116; // wysokość podpisu + karty meczu o 3. miejsce (px)
@@ -28,7 +32,7 @@ const GAP = 40; // odstęp między rundami (px) – w połowie biegną pionowe �
 const isDone = (m: BracketMatch) => m.status === "CONFIRMED" || m.status === "WALKOVER";
 const hasPlayer = (m: BracketMatch, id: string) => m.a?.id === id || m.b?.id === id;
 
-function Row({ p, score, win, done, marked, onHover }: { p: BracketSide; score: number; win: boolean; done: boolean; marked: string | null; onHover: (id: string | null) => void }) {
+function Row({ p, score, colors, flags, win, done, marked, onHover }: { p: BracketSide; score: number; colors: string[] | null; flags: string[]; win: boolean; done: boolean; marked: string | null; onHover: (id: string | null) => void }) {
   const hl = p && marked === p.id;
   return (
     <div
@@ -45,6 +49,7 @@ function Row({ p, score, win, done, marked, onHover }: { p: BracketSide; score: 
             <span className="h-[18px] w-[18px] rounded-sm bg-crimson/70" aria-hidden />
           )}
           <span className={`flex-1 truncate ${win ? "font-bold text-gold-light" : done ? "text-cream-dim" : ""}`}>{p.nick}</span>
+          <GameFlags colors={done ? colors : null} flags={flags} />
         </>
       ) : (
         <span className="flex-1 truncate text-cream-dim/60 italic">oczekuje…</span>
@@ -54,20 +59,20 @@ function Row({ p, score, win, done, marked, onHover }: { p: BracketSide; score: 
   );
 }
 
-function Card({ m, marked, onHover, final }: { m: BracketMatch; marked: string | null; onHover: (id: string | null) => void; final?: boolean }) {
+function Card({ m, flags, marked, onHover, final }: { m: BracketMatch; flags: string[]; marked: string | null; onHover: (id: string | null) => void; final?: boolean }) {
   const done = isDone(m);
   const involved = marked && hasPlayer(m, marked);
   return (
     <Link
       href={`/mecze/${m.id}`}
       data-players={[m.a?.id, m.b?.id].filter(Boolean).join(" ")}
-      className={`frame-xs block overflow-hidden bg-[linear-gradient(180deg,#2c2016,#160e08)] transition-shadow ${final ? "w-60 shadow-[0_0_18px_rgba(241,215,122,.3)]" : "w-52"} ${
+      className={`frame-xs block overflow-hidden bg-[linear-gradient(180deg,#2c2016,#160e08)] transition-shadow ${final ? "w-72 shadow-[0_0_18px_rgba(241,215,122,.3)]" : "w-60"} ${
         involved ? "shadow-[0_0_0_1px_var(--gold-light),0_0_14px_rgba(241,215,122,.45)]" : ""
       }`}
     >
       <div className="divide-y divide-black/60">
-        <Row p={m.a} score={m.scoreA} win={done && m.winnerId === m.a?.id} done={done} marked={marked} onHover={onHover} />
-        <Row p={m.b} score={m.scoreB} win={done && m.winnerId === m.b?.id} done={done} marked={marked} onHover={onHover} />
+        <Row p={m.a} score={m.scoreA} colors={m.colorsA} flags={flags} win={done && m.winnerId === m.a?.id} done={done} marked={marked} onHover={onHover} />
+        <Row p={m.b} score={m.scoreB} colors={m.colorsB} flags={flags} win={done && m.winnerId === m.b?.id} done={done} marked={marked} onHover={onHover} />
       </div>
       <div className="flex justify-between bg-black/30 px-2 py-0.5 text-[10px] tracking-wider text-cream-dim uppercase">
         <span>Bo{m.bestOf}</span>
@@ -114,7 +119,8 @@ const columnsFitting = (width: number) => Math.max(1, Math.floor((width - 2 * PA
  * a wysokość liczy się od pierwszej widocznej fazy – dzięki temu finał jest blisko. „Pokaż wszystko” daje pełny widok
  * dopasowany do szerokości; wyszukiwarka podświetla ścieżkę gracza.
  */
-export function Bracket({ rounds, third }: { rounds: BracketRound[]; third: BracketMatch | null }) {
+/** `flags` – wgrane pliki z assets/flags (małe flagi red_small.png / blue_small.png przy graczach). */
+export function Bracket({ rounds, third, flags = [] }: { rounds: BracketRound[]; third: BracketMatch | null; flags?: string[] }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -260,7 +266,7 @@ export function Bracket({ rounds, third }: { rounds: BracketRound[]; third: Brac
                     <div className="relative flex flex-col justify-around" style={{ height, marginBottom: ri === visible.length - 1 ? extra : 0 }}>
                       {r.matches.map((m) => (
                         <div key={m.id} className="relative flex items-center">
-                          <Card m={m} marked={marked} onHover={setHovered} final={isFinal} />
+                          <Card m={m} flags={flags} marked={marked} onHover={setHovered} final={isFinal} />
                           {isFinal && champion && <p className="absolute inset-x-0 top-full mt-1.5 text-center text-xs font-bold tracking-wider text-gold-light uppercase">🏆 Zwycięzca: {champion.nick}</p>}
                         </div>
                       ))}
@@ -268,7 +274,7 @@ export function Bracket({ rounds, third }: { rounds: BracketRound[]; third: Brac
                       {isFinal && third && (
                         <div className="absolute" style={{ top: thirdTop, left: -GAP / 2 }}>
                           <p className="mb-1.5 border-t border-gold-dark/50 pt-1.5 text-center text-[11px] tracking-widest text-cream-dim uppercase">Mecz o 3. miejsce</p>
-                          <Card m={third} marked={marked} onHover={setHovered} />
+                          <Card m={third} flags={flags} marked={marked} onHover={setHovered} />
                         </div>
                       )}
                     </div>

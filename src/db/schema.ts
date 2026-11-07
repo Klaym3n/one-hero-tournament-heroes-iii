@@ -13,6 +13,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { DEFAULT_GAME_SETTINGS, type GameSettings } from "../lib/tournament/game-settings";
 
 const id = () => uuid("id").primaryKey().defaultRandom();
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
@@ -79,12 +80,8 @@ export const sessions = pgTable(
 );
 
 // ---------- Turniej ----------
-export type TournamentRules = {
-  difficulty: string;
-  turnTimer: string;
-  handicap: string;
-  other: string;
-};
+// ustawienia gry: lista pól i wartości domyślne w lib/tournament/game-settings.ts
+export type TournamentRules = GameSettings;
 
 export const tournaments = pgTable("tournaments", {
   id: id(),
@@ -100,12 +97,7 @@ export const tournaments = pgTable("tournaments", {
   prizesMd: text("prizes_md").notNull().default(""),
   scheduleMd: text("schedule_md").notNull().default(""),
   formatMd: text("format_md").notNull().default(""),
-  gameSettings: jsonb("game_settings").$type<TournamentRules>().notNull().default({
-    difficulty: "",
-    turnTimer: "",
-    handicap: "",
-    other: "",
-  }),
+  gameSettings: jsonb("game_settings").$type<TournamentRules>().notNull().default(DEFAULT_GAME_SETTINGS),
   rulesVersion: integer("rules_version").notNull().default(1),
   // wersja i data aktualizacji regulaminu wyświetlane pod treścią (ustawiane ręcznie w panelu)
   rulesVersionLabel: text("rules_version_label").notNull().default(""),
@@ -223,6 +215,9 @@ export const matches = pgTable(
     winnerId: uuid("winner_id").references(() => participants.id),
     scoreA: integer("score_a").notNull().default(0),
     scoreB: integer("score_b").notNull().default(0),
+    // kolory graczy w kolejnych grach (red, blue, …) z zatwierdzonego raportu – znane dopiero po wyniku
+    colorsA: jsonb("colors_a").$type<string[] | null>(),
+    colorsB: jsonb("colors_b").$type<string[] | null>(),
     scheduledAt: ts("scheduled_at"),
     scheduledById: uuid("scheduled_by_id").references(() => users.id),
     nextMatchId: uuid("next_match_id"),
@@ -283,6 +278,9 @@ export const matchReportGames = pgTable(
     factionB: text("faction_b").notNull(),
     heroA: text("hero_a").notNull(),
     heroB: text("hero_b").notNull(),
+    // kolory graczy w tej grze (null w raportach sprzed wprowadzenia wyboru koloru)
+    colorA: text("color_a"),
+    colorB: text("color_b"),
     // indeks dnia gry (1 = 111); prezentowany jako MWD
     endDay: integer("end_day").notNull(),
     notes: text("notes"),

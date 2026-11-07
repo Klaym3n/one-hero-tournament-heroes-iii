@@ -1,4 +1,5 @@
 // Domyślne treści nowego turnieju – do edycji w panelu administracyjnym.
+import { DEFAULT_GAME_SETTINGS } from "./game-settings";
 
 export const DEFAULT_TOURNAMENT = {
   name: "One Hero Open",
@@ -68,12 +69,7 @@ Dane przechowujemy do zakończenia turnieju i archiwizacji wyników. Masz prawo 
 
 ## Pliki cookie
 Serwis używa wyłącznie niezbędnego ciasteczka sesji logowania.`,
-  gameSettings: {
-    difficulty: "200% (Ekspert)",
-    turnTimer: "Zgodnie z ustawieniami szablonu / lobby",
-    handicap: "Brak",
-    other: "Format One Hero – kupowanie dodatkowych bohaterów zabronione.",
-  },
+  gameSettings: DEFAULT_GAME_SETTINGS,
 };
 
 export const DEFAULT_TEMPLATES = [

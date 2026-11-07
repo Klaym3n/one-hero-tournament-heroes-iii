@@ -12,11 +12,13 @@ import { PHASE_LABELS, fmtDate } from "@/lib/labels";
 export default async function HomePage() {
   await connection();
   const t = await getTournament();
+  // w fazie przygotowań nie ma jeszcze meczów – zamiast nich harmonogram turnieju
+  const preparing = t.phase === "DRAFT";
   const [user, news, upcoming, results] = await Promise.all([
     getSessionUser(),
     getAnnouncements(t.id, 5),
-    upcomingScheduled(t.id),
-    recentResults(t.id),
+    preparing ? [] : upcomingScheduled(t.id),
+    preparing ? [] : recentResults(t.id),
   ]);
   const me = user ? await getParticipantByUser(t.id, user.id) : null;
   const registered = me?.status === "ACTIVE";
@@ -82,12 +84,22 @@ export default async function HomePage() {
           </Frame>
         </div>
         <div className="space-y-8">
-          <Frame title="Nadchodzące mecze">
-            {upcoming.length === 0 ? <Empty>Brak zaplanowanych meczów.</Empty> : <div className="space-y-2">{upcoming.map((m) => <MatchRow key={m.id} m={m} />)}</div>}
-          </Frame>
-          <Frame title="Ostatnie wyniki">
-            {results.length === 0 ? <Empty>Jeszcze nikt nie zagrał.</Empty> : <div className="space-y-2">{results.map((m) => <MatchRow key={m.id} m={m} />)}</div>}
-          </Frame>
+          {preparing ? (
+            <Frame>
+              <Markdown>{t.scheduleMd || `## Harmonogram
+
+Harmonogram zostanie opublikowany wkrótce.`}</Markdown>
+            </Frame>
+          ) : (
+            <>
+              <Frame title="Nadchodzące mecze">
+                {upcoming.length === 0 ? <Empty>Brak zaplanowanych meczów.</Empty> : <div className="space-y-2">{upcoming.map((m) => <MatchRow key={m.id} m={m} />)}</div>}
+              </Frame>
+              <Frame title="Ostatnie wyniki">
+                {results.length === 0 ? <Empty>Jeszcze nikt nie zagrał.</Empty> : <div className="space-y-2">{results.map((m) => <MatchRow key={m.id} m={m} />)}</div>}
+              </Frame>
+            </>
+          )}
         </div>
       </div>
 

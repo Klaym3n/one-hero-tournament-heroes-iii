@@ -11,6 +11,8 @@ import type { SessionUser } from "@/lib/auth/session";
 import { ServiceError } from "./errors";
 import * as T from "./tournament";
 import * as M from "./matches";
+import { PLAYER_COLOR_SLUGS, oppositeColor } from "@/data/colors";
+import { indexToMwd, MAX_END_DAY_INDEX } from "@/lib/mwd";
 import { scanAllProposals } from "./scheduling";
 
 /**
@@ -92,16 +94,21 @@ export async function seedDemo(admin: SessionUser, opts: { players: number; brac
     }
     return {
       games: seq.map((s) => {
+        const colorA = pick([...PLAYER_COLOR_SLUGS]);
+        const colorB = oppositeColor(colorA);
         const fa = pick(factions);
         const fb = pick(factions);
         return {
           winner: s,
+          colorA,
+          colorB,
           mapTemplateId: pick(templates).id,
           factionA: fa,
           factionB: fb,
-          heroA: pick(heroes.filter((h) => h.faction === fa)).slug,
-          heroB: pick(heroes.filter((h) => h.faction === fb)).slug,
-          day: { month: 1 + rnd(3), week: 1 + rnd(4), day: 1 + rnd(7) },
+          // czasem bohater spoza frakcji startowej (np. z tawerny)
+          heroA: pick(rnd(5) ? heroes.filter((h) => h.faction === fa) : heroes).slug,
+          heroB: pick(rnd(5) ? heroes.filter((h) => h.faction === fb) : heroes).slug,
+          day: indexToMwd(1 + rnd(MAX_END_DAY_INDEX)),
           notes: rnd(4) === 0 ? "Decydująca bitwa na neutralnych smokach." : "",
         };
       }),

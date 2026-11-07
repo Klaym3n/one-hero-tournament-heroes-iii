@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { Frame, Empty } from "@/components/ui/Frame";
 import { Avatar } from "@/components/ui/Avatar";
 import { StatusBadge } from "@/components/game/MatchRow";
+import { PlayerColorMark } from "@/components/game/PlayerColorMark";
 import { ReportView } from "@/components/match/ReportView";
 import { ConfirmReport, ProposalButton, ScheduleForm } from "@/components/match/MatchControls";
 import { LiveRefresh } from "@/components/LiveRefresh";
@@ -47,8 +48,11 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   const ready = Boolean(m.playerAId && m.playerBId) && m.status !== "WAITING";
   const pending = data.reports.find((r) => r.status === "SUBMITTED");
   const official = data.reports.find((r) => r.status === "ACCEPTED");
+  // raport przeciwnika czekający na moją akceptację
+  const toConfirm = pending && mySide && m.status !== "DISPUTED" && pending.submittedById !== user!.id ? pending : null;
+  // raport do akceptacji jest już pokazany w całości wyżej
   const canSeeAll = Boolean(mySide) || isStaff;
-  const visibleReports = canSeeAll ? data.reports : official ? [official] : [];
+  const visibleReports = (canSeeAll ? data.reports : official ? [official] : []).filter((r) => r !== toConfirm);
   const nickA = m.a?.nick ?? "TBD";
   const nickB = m.b?.nick ?? "TBD";
 
@@ -65,7 +69,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
             const isWinner = done && m.winnerId && m.winnerId === p?.id;
             const block = (
               <div key={i} className={`flex flex-col items-center max-sm:min-w-0 gap-2 text-center ${i === 0 ? "sm:items-end sm:text-right" : "sm:items-start sm:text-left"}`}>
-                <span className={`h-1 w-16 ${i === 0 ? "bg-red-player" : "bg-blue-player"}`} aria-hidden />
+                <PlayerColorMark colors={done ? (i === 0 ? m.colorsA : m.colorsB) : null} className="h-1 w-16" horizontal />
                 <Avatar src={p?.avatarUrl} name={p?.nick ?? "?"} size={64} />
                 {p ? (
                   <Link href={`/gracze/${p.id}`} className={`font-display text-sm font-bold max-sm:max-w-full max-sm:[overflow-wrap:anywhere] hover:underline sm:text-2xl ${isWinner ? "text-gold-light" : ""}`}>
@@ -109,7 +113,8 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
       {(mySide || isStaff) && ready && !done && (
         <div className="grid gap-8 max-sm:grid-cols-1 md:grid-cols-2">
-          <Frame title="Wynik meczu">
+          {/* do akceptacji: pełny podgląd raportu przeciwnika, więc ramka na całą szerokość */}
+          <Frame title={toConfirm ? "Raport przeciwnika do akceptacji" : "Wynik meczu"} className={toConfirm ? "md:col-span-2" : ""}>
             {m.status === "DISPUTED" ? (
               <p className="text-sm">
                 Mecz czeka na decyzję moderatora.{" "}
@@ -119,8 +124,10 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
                   </Link>
                 )}
               </p>
-            ) : pending && mySide && pending.submittedById !== user!.id ? (
-              <ConfirmReport reportId={pending.id} score={`${pending.scoreA}:${pending.scoreB}`} />
+            ) : toConfirm ? (
+              <ConfirmReport reportId={toConfirm.id} score={`${toConfirm.scoreA}:${toConfirm.scoreB}`}>
+                <ReportView report={toConfirm} playerAId={m.playerAId} nickA={nickA} nickB={nickB} heroNames={heroNames} assets={assets} />
+              </ConfirmReport>
             ) : pending && mySide ? (
               <div className="space-y-3 text-sm">
                 <p>Twój raport czeka na potwierdzenie przez przeciwnika.</p>

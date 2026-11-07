@@ -1,0 +1,52 @@
+ALTER TABLE "match_report_games" ADD COLUMN "color_a" text;--> statement-breakpoint
+ALTER TABLE "match_report_games" ADD COLUMN "color_b" text;--> statement-breakpoint
+ALTER TABLE "matches" ADD COLUMN "colors_a" jsonb;--> statement-breakpoint
+ALTER TABLE "matches" ADD COLUMN "colors_b" jsonb;--> statement-breakpoint
+-- Turniejowa pula bohaterów: tylko wskazani bohaterowie są aktywni (pozostali zostają w bazie dla historii raportów).
+UPDATE "heroes" SET "active" = false;--> statement-breakpoint
+INSERT INTO "heroes" ("slug", "name", "faction", "hero_class", "active") VALUES
+('tyris', 'Tyris', 'castle', 0, true),
+('loynis', 'Loynis', 'castle', 1, true),
+('sir-mullich', 'Sir Mullich', 'castle', 0, true),
+('beatrice', 'Beatrice', 'castle', 0, true),
+('mephala', 'Mephala', 'rampart', 0, true),
+('clancy', 'Clancy', 'rampart', 0, true),
+('kyrre', 'Kyrre', 'rampart', 0, true),
+('gelu', 'Gelu', 'rampart', 0, true),
+('piquedram', 'Piquedram', 'tower', 0, true),
+('thane', 'Thane', 'tower', 0, true),
+('neela', 'Neela', 'tower', 0, true),
+('dracon', 'Dracon', 'tower', 1, true),
+('fiona', 'Fiona', 'inferno', 0, true),
+('marius', 'Marius', 'inferno', 0, true),
+('calh', 'Calh', 'inferno', 0, true),
+('xeron', 'Xeron', 'inferno', 0, true),
+('galthran', 'Galthran', 'necropolis', 0, true),
+('thant', 'Thant', 'necropolis', 1, true),
+('haart-lich', 'Haart Lich', 'necropolis', 0, true),
+('gunnar', 'Gunnar', 'dungeon', 0, true),
+('jeddite', 'Jeddite', 'dungeon', 1, true),
+('mutare-drake', 'Mutare Drake', 'dungeon', 0, true),
+('shiva', 'Shiva', 'stronghold', 0, true),
+('crag-hack', 'Crag Hack', 'stronghold', 0, true),
+('dessa', 'Dessa', 'stronghold', 1, true),
+('gundula', 'Gundula', 'stronghold', 1, true),
+('kilgor', 'Kilgor', 'stronghold', 0, true),
+('drakon', 'Drakon', 'fortress', 0, true),
+('tazar', 'Tazar', 'fortress', 0, true),
+('broghild', 'Broghild', 'fortress', 0, true),
+('monere', 'Monere', 'conflux', 0, true),
+('grindan', 'Grindan', 'conflux', 1, true),
+('corkes', 'Corkes', 'cove', 0, true),
+('cassiopeia', 'Cassiopeia', 'cove', 0, true),
+('miriam', 'Miriam', 'cove', 0, true),
+('tark', 'Tark', 'cove', 0, true),
+('dury', 'Dury', 'factory', 0, true),
+('frederick', 'Frederick', 'factory', 1, true),
+('tavin', 'Tavin', 'factory', 0, true),
+('murdoch', 'Murdoch', 'factory', 0, true),
+('eikthurn', 'Eikthurn', 'bulwark', 0, true),
+('creyle', 'Creyle', 'bulwark', 0, true),
+('ergon', 'Ergon', 'bulwark', 0, true),
+('dalton', 'Dalton', 'bulwark', 1, true)
+ON CONFLICT ("slug") DO UPDATE SET "name" = excluded."name", "faction" = excluded."faction", "hero_class" = excluded."hero_class", "active" = true;

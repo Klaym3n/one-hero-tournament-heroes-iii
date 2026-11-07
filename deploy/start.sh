@@ -13,7 +13,7 @@ if [ -z "${LOG_DIR}" ] && [ -d /home/container ] && [ -w /home/container ]; then
   export LOG_DIR=/home/container/logs
 fi
 if [ -n "${ASSETS_DIR}" ]; then
-  mkdir -p "${ASSETS_DIR}/factions" "${ASSETS_DIR}/heroes" "${ASSETS_DIR}/ui"
+  mkdir -p "${ASSETS_DIR}/factions" "${ASSETS_DIR}/heroes" "${ASSETS_DIR}/flags" "${ASSETS_DIR}/ui"
   # domyślne pliki kopiowane tylko, jeśli nie istnieją
   cp -rn /app/default-assets/. "${ASSETS_DIR}/" 2>/dev/null || true
 fi

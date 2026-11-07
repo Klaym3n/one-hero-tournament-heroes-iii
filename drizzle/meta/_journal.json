@@ -22,6 +22,20 @@
       "when": 1793703559186,
       "tag": "0002_profile_rules_stats",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794083827708,
+      "tag": "0003_match_colors_hero_pool",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794089946151,
+      "tag": "0004_game_settings",
+      "breakpoints": true
     }
   ]
 }

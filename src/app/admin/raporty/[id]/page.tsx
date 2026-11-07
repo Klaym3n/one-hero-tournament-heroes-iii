@@ -85,6 +85,8 @@ export default async function ModerateMatchPage({ params }: { params: Promise<{ 
             bestOf={m.bestOf}
             nickA={nickA}
             nickB={nickB}
+            avatarA={m.a?.avatarUrl}
+            avatarB={m.b?.avatarUrl}
             templates={templates.map((t) => ({ id: t.id, name: t.name }))}
             heroes={heroes.map((h) => ({ slug: h.slug, name: h.name, faction: h.faction, heroClass: h.heroClass }))}
             assets={assets}

@@ -8,6 +8,10 @@ export type MWD = { month: number; week: number; day: number };
 
 export const MAX_MONTH = 99;
 
+/** Ostateczny dzień zakończenia rozgrywki w turnieju: 242 (miesiąc 2, tydzień 4, dzień 2). */
+export const MAX_END_DAY: MWD = { month: 2, week: 4, day: 2 };
+export const MAX_END_DAY_INDEX = (MAX_END_DAY.month - 1) * 28 + (MAX_END_DAY.week - 1) * 7 + MAX_END_DAY.day;
+
 export function isValidMWD({ month, week, day }: MWD): boolean {
   return (
     Number.isInteger(month) &&

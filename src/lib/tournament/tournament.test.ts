@@ -172,19 +172,18 @@ describe("validateReport", () => {
   const T = "11111111-1111-4111-8111-111111111111";
   const ctx: ReportContext = {
     bestOf: 3,
-    heroesByFaction: new Map([
-      ["castle", new Set(["orrin", "valeska"])],
-      ["necropolis", new Set(["sandro"])],
-    ]),
+    activeHeroes: new Set(["tyris", "loynis", "thant"]),
     activeTemplateIds: new Set([T]),
   };
   const game = (winner: "A" | "B", over: Record<string, unknown> = {}) => ({
     winner,
+    colorA: "red",
+    colorB: "blue",
     mapTemplateId: T,
     factionA: "castle",
     factionB: "necropolis",
-    heroA: "orrin",
-    heroB: "sandro",
+    heroA: "tyris",
+    heroB: "thant",
     day: { month: 1, week: 4, day: 2 },
     ...over,
   });
@@ -207,9 +206,30 @@ describe("validateReport", () => {
     expect(validateReport({ games: [game("A"), game("B")] }, ctx).ok).toBe(false);
   });
 
-  it("odrzuca bohatera spoza frakcji", () => {
-    const r = validateReport({ games: [game("A", { heroA: "sandro" }), game("A")] }, ctx);
+  it("akceptuje bohatera z innej frakcji niż startowa", () => {
+    const r = validateReport({ games: [game("A", { heroA: "thant" }), game("A")] }, ctx);
+    expect(r.ok).toBe(true);
+  });
+
+  it("odrzuca bohatera spoza turniejowej puli", () => {
+    const r = validateReport({ games: [game("A", { heroA: "orrin" }), game("A")] }, ctx);
     expect(r.ok).toBe(false);
+  });
+
+  it("wymaga dwóch różnych kolorów graczy w każdej grze", () => {
+    expect(validateReport({ games: [game("A", { colorA: undefined }), game("A")] }, ctx).ok).toBe(false);
+    expect(validateReport({ games: [game("A"), game("A", { colorA: "blue" })] }, ctx).ok).toBe(false);
+    expect(validateReport({ games: [game("A", { colorA: "blue", colorB: "red" }), game("A")] }, ctx).ok).toBe(true);
+  });
+
+  it("odrzuca kolor inny niż czerwony/niebieski", () => {
+    expect(validateReport({ games: [game("A", { colorA: "teal" }), game("A")] }, ctx).ok).toBe(false);
+  });
+
+  it("nie pozwala zakończyć gry po dniu 242", () => {
+    expect(validateReport({ games: [game("A", { day: { month: 2, week: 4, day: 2 } }), game("A")] }, ctx).ok).toBe(true);
+    expect(validateReport({ games: [game("A", { day: { month: 2, week: 4, day: 3 } }), game("A")] }, ctx).ok).toBe(false);
+    expect(validateReport({ games: [game("A", { day: { month: 3, week: 1, day: 1 } }), game("A")] }, ctx).ok).toBe(false);
   });
 
   it("odrzuca nieprawidłowy dzień", () => {

@@ -72,11 +72,15 @@ async function sampleGames(matchId: string, winners: ("A" | "B")[]) {
   return {
     games: winners.map((w, i) => ({
       winner: w,
+      // kolory zmieniają się między grami
+      colorA: i % 2 ? "blue" : "red",
+      colorB: i % 2 ? "red" : "blue",
       mapTemplateId: templates[i % templates.length].id,
       factionA: "castle",
       factionB: "necropolis",
-      heroA: castle[i].slug,
-      heroB: necro[i].slug,
+      heroA: castle[i % castle.length].slug,
+      // bohater z innej frakcji niż startowa
+      heroB: i === 0 ? castle[1].slug : necro[i % necro.length].slug,
       day: { month: 1, week: 3, day: 4 },
     })),
     summary: "Test",
@@ -154,7 +158,7 @@ describe("pełny przebieg turnieju", () => {
     await expect(M.m.staffAcceptReport(users[5], rid, "ok")).rejects.toThrow(/uprawnień/);
     await M.m.staffAcceptReport(moderator, rid, "Potwierdzone nagraniem");
     const [resolved] = await M.db.db.select().from(M.schema.matches).where(eq(M.schema.matches.id, first.id));
-    expect(resolved).toMatchObject({ status: "CONFIRMED", scoreA: 2, scoreB: 0, winnerId: first.playerAId });
+    expect(resolved).toMatchObject({ status: "CONFIRMED", scoreA: 2, scoreB: 0, winnerId: first.playerAId, colorsA: ["red", "blue"], colorsB: ["blue", "red"] });
 
     // kontr-raport: obaj zgłaszają różne wyniki → spór
     const second = groupMatches[1];
@@ -166,7 +170,7 @@ describe("pełny przebieg turnieju", () => {
     expect(counter.status).toBe("DISPUTED");
     await M.m.staffSetResult(moderator, second.id, await sampleGames(second.id, ["B", "A", "B"]), "Ustalone z graczami");
     const [fixed] = await M.db.db.select().from(M.schema.matches).where(eq(M.schema.matches.id, second.id));
-    expect(fixed).toMatchObject({ status: "CONFIRMED", scoreA: 1, scoreB: 2 });
+    expect(fixed).toMatchObject({ status: "CONFIRMED", scoreA: 1, scoreB: 2, colorsA: ["red", "blue", "red"], colorsB: ["blue", "red", "blue"] });
 
     // historia zmian
     const revs = await M.db.db.select().from(M.schema.matchRevisions).where(eq(M.schema.matchRevisions.matchId, second.id));

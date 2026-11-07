@@ -6,15 +6,17 @@ import { useAction } from "@/components/ui/useAction";
 import { FeedbackBox } from "@/components/ui/FeedbackBox";
 
 /** Przeciwnik: akceptacja raportu lub spór. */
-export function ConfirmReport({ reportId, score }: { reportId: string; score: string }) {
+/** `children` – podgląd raportu przeciwnika (frakcje, bohaterowie, kolory, dni) pokazywany przed decyzją. */
+export function ConfirmReport({ reportId, score, children }: { reportId: string; score: string; children?: React.ReactNode }) {
   const { pending, feedback, exec } = useAction();
   const [disputing, setDisputing] = useState(false);
   const [reason, setReason] = useState("");
   return (
     <div className="space-y-3">
       <p className="text-sm">
-        Przeciwnik zgłosił wynik <strong className="font-display text-gold-light">{score}</strong>. Sprawdź szczegóły raportu poniżej.
+        Przeciwnik zgłosił wynik <strong className="font-display text-gold-light">{score}</strong>. Sprawdź szczegóły raportu przed akceptacją.
       </p>
+      {children}
       {!disputing ? (
         <div className="flex flex-wrap gap-2">
           <button className="btn btn-success" disabled={pending} onClick={() => exec(() => acceptReportAction(reportId))}>

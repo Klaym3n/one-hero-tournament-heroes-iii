@@ -36,7 +36,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const theirs = data.reports.find((r) => r.status === "SUBMITTED" && r.submittedById !== user.id);
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
       <PageTitle subtitle={`${m.label} · ${m.a?.nick} vs ${m.b?.nick}`}>Raport meczu</PageTitle>
       {blocked ? (
         <Frame>
@@ -66,6 +66,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             bestOf={m.bestOf}
             nickA={m.a?.nick ?? "Gracz 1"}
             nickB={m.b?.nick ?? "Gracz 2"}
+            avatarA={m.a?.avatarUrl}
+            avatarB={m.b?.avatarUrl}
             mySide={mySide}
             templates={templates.map((t) => ({ id: t.id, name: t.name }))}
             heroes={heroes.map((h) => ({ slug: h.slug, name: h.name, faction: h.faction, heroClass: h.heroClass }))}

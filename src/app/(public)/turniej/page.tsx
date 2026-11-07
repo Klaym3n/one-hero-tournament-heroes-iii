@@ -4,21 +4,17 @@ import { Frame, PageTitle } from "@/components/ui/Frame";
 import { Markdown } from "@/components/ui/Markdown";
 import { getTournament } from "@/lib/tournament/current";
 import { LiveRefresh } from "@/components/LiveRefresh";
+import { GAME_SETTING_FIELDS, normalizeGameSettings } from "@/lib/tournament/game-settings";
 
 export const metadata: Metadata = { title: "Informacje o turnieju" };
 
 export default async function TournamentInfoPage() {
   await connection();
   const t = await getTournament();
-  const s = t.gameSettings;
-  const settings = [
-    ["Poziom trudności", s.difficulty],
-    ["Czas na turę", s.turnTimer],
-    ["Handicap", s.handicap],
-    ["Faza grupowa", `Bo${t.groupBestOf}, każdy z każdym`],
-    ["Faza pucharowa", `Bo${t.knockoutBestOf}, finał Bo${t.finalBestOf}, o 3. miejsce Bo${t.thirdPlaceBestOf}`],
-    ["Inne", s.other],
-  ].filter(([, v]) => v);
+  const s = normalizeGameSettings(t.gameSettings);
+  const settings = GAME_SETTING_FIELDS.map((f) => [f.label, s[f.key]] as const).filter(([, v]) => v);
+  // ustawienia gry pokazujemy dopiero od otwarcia zapisów
+  const showSettings = t.phase !== "DRAFT" && settings.length > 0;
 
   return (
     <div className="space-y-8">
@@ -31,21 +27,22 @@ export default async function TournamentInfoPage() {
               <Markdown>{t.infoMd}</Markdown>
             </Frame>
           )}
-          {t.formatMd && (
+          {showSettings && (
             <Frame>
-              <Markdown>{t.formatMd}</Markdown>
+              {/* nagłówek w tym samym stylu co sekcje markdown (## …) */}
+              <div className="prose-h3">
+                <h2>Ustawienia gry</h2>
+                <dl className="divide-y divide-gold/10">
+                  {settings.map(([k, v]) => (
+                    <div key={k} className="grid gap-1 py-2.5 max-sm:grid-cols-1 sm:grid-cols-3">
+                      <dt className="text-sm font-semibold text-cream-dim">{k}</dt>
+                      <dd className="sm:col-span-2">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
             </Frame>
           )}
-          <Frame title="Ustawienia gry">
-            <dl className="divide-y divide-gold/10">
-              {settings.map(([k, v]) => (
-                <div key={k} className="grid gap-1 max-sm:grid-cols-1 py-2.5 sm:grid-cols-3">
-                  <dt className="text-sm font-semibold text-cream-dim">{k}</dt>
-                  <dd className="sm:col-span-2">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </Frame>
           {t.scheduleMd && (
             <Frame>
               <Markdown>{t.scheduleMd}</Markdown>

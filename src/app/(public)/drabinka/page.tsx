@@ -5,6 +5,7 @@ import { Bracket, type BracketMatch } from "@/components/game/Bracket";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { getTournament } from "@/lib/tournament/current";
 import { getBracket, type MatchView } from "@/server/queries";
+import { getAssetManifest } from "@/lib/assets";
 
 export const metadata: Metadata = { title: "Drabinka turniejowa" };
 
@@ -16,6 +17,8 @@ function toBracket(m: MatchView): BracketMatch {
     b: side(m.b),
     scoreA: m.scoreA,
     scoreB: m.scoreB,
+    colorsA: m.status === "CONFIRMED" ? m.colorsA : null,
+    colorsB: m.status === "CONFIRMED" ? m.colorsB : null,
     winnerId: m.winnerId,
     status: m.status,
     bestOf: m.bestOf,
@@ -26,7 +29,7 @@ function toBracket(m: MatchView): BracketMatch {
 export default async function BracketPage() {
   await connection();
   const t = await getTournament();
-  const { rounds, third } = await getBracket(t.id);
+  const [{ rounds, third }, assets] = await Promise.all([getBracket(t.id), getAssetManifest()]);
   const finalMatch = rounds.at(-1)?.matches[0];
   const champion = finalMatch && (finalMatch.status === "CONFIRMED" || finalMatch.status === "WALKOVER") ? (finalMatch.winnerId === finalMatch.playerAId ? finalMatch.a : finalMatch.b) : null;
 
@@ -45,7 +48,7 @@ export default async function BracketPage() {
           <Empty>Drabinka zostanie wygenerowana po zakończeniu fazy grupowej.</Empty>
         </Frame>
       ) : (
-        <Bracket rounds={rounds.map((r) => ({ round: r.round, name: r.name, matches: r.matches.map(toBracket) }))} third={third ? toBracket(third) : null} />
+        <Bracket rounds={rounds.map((r) => ({ round: r.round, name: r.name, matches: r.matches.map(toBracket) }))} third={third ? toBracket(third) : null} flags={assets.flags} />
       )}
     </div>
   );

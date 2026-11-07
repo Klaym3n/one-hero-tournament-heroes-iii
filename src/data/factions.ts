@@ -1,5 +1,5 @@
 /**
- * Frakcje Heroes III (SoD + Horn of the Abyss) i domyślne listy bohaterów.
+ * Frakcje Heroes III (SoD + Horn of the Abyss) i turniejowa pula bohaterów.
  * Bohaterowie są wgrywani do bazy (tabela `heroes`) i mogą być edytowani w panelu admina.
  * Grafiki: public/assets/factions/<slug>.png oraz public/assets/heroes/<heroSlug>.png
  */
@@ -49,65 +49,81 @@ export function isFactionSlug(v: string): v is FactionSlug {
   return v in FACTION_BY_SLUG;
 }
 
-type Roster = { might: string[]; magic: string[]; campaign?: string[] };
+type HeroDef = { name: string; specialty: string; magic?: boolean };
 
-/** Domyślne pule bohaterów (pierwsza klasa = "might", druga = "magic"). Bohaterowie kampanijni są domyślnie nieaktywni. */
-export const DEFAULT_HEROES: Record<FactionSlug, Roster> = {
-  castle: {
-    might: ["Orrin", "Valeska", "Edric", "Sylvia", "Beatrice", "Lord Haart", "Sorsha", "Christian", "Tyris", "Sir Mullich"],
-    magic: ["Rion", "Adela", "Cuthbert", "Adelaide", "Ingham", "Sanya", "Loynis", "Caitlin"],
-    campaign: ["Catherine", "Roland"],
-  },
-  rampart: {
-    might: ["Mephala", "Ufretin", "Jenova", "Ryland", "Thorgrim", "Giselle", "Ivor", "Clancy", "Kyrre"],
-    magic: ["Coronius", "Uland", "Elleshar", "Gem", "Malcom", "Melodia", "Alagar", "Aeris"],
-    campaign: ["Gelu"],
-  },
-  tower: {
-    might: ["Piquedram", "Thane", "Josephine", "Neela", "Torosar", "Fafner", "Rissa", "Iona"],
-    magic: ["Astral", "Halon", "Serena", "Daremyth", "Theodorus", "Solmyr", "Cyra", "Aine"],
-    campaign: ["Dracon"],
-  },
-  inferno: {
-    might: ["Fiona", "Rashka", "Marius", "Ignatius", "Octavia", "Calh", "Pyre", "Nymus"],
-    magic: ["Ayden", "Xyron", "Axsis", "Olema", "Calid", "Ash", "Zydar", "Xarfax"],
-    campaign: ["Xeron"],
-  },
-  necropolis: {
-    might: ["Straker", "Vokial", "Moandor", "Charna", "Tamika", "Isra", "Clavius", "Galthran", "Ranloo", "Haart Lich"],
-    magic: ["Septienna", "Aislinn", "Sandro", "Nimbus", "Thant", "Xsi", "Vidomina", "Nagash"],
-  },
-  dungeon: {
-    might: ["Lorelei", "Arlach", "Dace", "Ajit", "Damacon", "Gunnar", "Synca", "Shakti"],
-    magic: ["Alamar", "Jaegar", "Malekith", "Jeddite", "Geon", "Deemer", "Sephinroth", "Darkstorn"],
-    campaign: ["Mutare", "Mutare Drake"],
-  },
-  stronghold: {
-    might: ["Yog", "Gurnisson", "Jabarkas", "Shiva", "Gretchin", "Krellion", "Crag Hack", "Tyraxor"],
-    magic: ["Gird", "Vey", "Dessa", "Terek", "Zubin", "Gundula", "Oris", "Saurug"],
-    campaign: ["Kilgor", "Boragus"],
-  },
-  fortress: {
-    might: ["Bron", "Drakon", "Wystan", "Tazar", "Alkin", "Korbac", "Gerwulf", "Broghild"],
-    magic: ["Mirlanda", "Rosic", "Voy", "Kinkeria", "Verdish", "Merist", "Styg", "Andra", "Tiva"],
-    campaign: ["Adrienne"],
-  },
-  conflux: {
-    might: ["Pasis", "Thunar", "Ignissa", "Lacus", "Monere", "Erdamon", "Fiur", "Kalt"],
-    magic: ["Luna", "Brissa", "Ciele", "Labetha", "Inteus", "Aenain", "Gelare", "Grindan"],
-  },
-  cove: {
-    might: ["Corkes", "Jeremy", "Illor", "Derek", "Elmore", "Leena", "Anabel", "Cassiopeia", "Miriam", "Bidley", "Tark"],
-    magic: ["Casmetra", "Eovacius", "Spint", "Andal", "Manfred", "Zilare", "Astra", "Dargem"],
-  },
-  factory: {
-    might: ["Henrietta", "Sam", "Tancred", "Melchior", "Floribert", "Wynona", "Dury", "Morton", "Murdoch"],
-    magic: ["Frederick", "Celestine", "Todd", "Agar", "Bertram", "Wrathmont", "Ziph", "Victoria", "Eanswythe"],
-  },
-  bulwark: {
-    might: ["Dhuin", "Oidana", "Neia", "Eikthurn", "Creyle", "Spadum", "Kynr", "Ergon"],
-    magic: ["Kriv", "Glacius", "Sial", "Dalton", "Biarma", "Haugir", "Akka", "Vehr", "Allora"],
-  },
+/**
+ * Turniejowa pula bohaterów – jedyni bohaterowie dostępni w każdej frakcji.
+ * `magic` = druga klasa frakcji (np. Kleryk), w przeciwnym razie pierwsza (np. Rycerz).
+ */
+export const DEFAULT_HEROES: Record<FactionSlug, HeroDef[]> = {
+  castle: [
+    { name: "Tyris", specialty: "Cavaliers" },
+    { name: "Loynis", specialty: "Prayer", magic: true },
+    { name: "Sir Mullich", specialty: "Speed" },
+    { name: "Beatrice", specialty: "Scouting" },
+  ],
+  rampart: [
+    { name: "Mephala", specialty: "Armorer" },
+    { name: "Clancy", specialty: "Unicorns" },
+    { name: "Kyrre", specialty: "Logistics" },
+    { name: "Gelu", specialty: "Sharpshooters" },
+  ],
+  tower: [
+    { name: "Piquedram", specialty: "Gargoyles" },
+    { name: "Thane", specialty: "Genies" },
+    { name: "Neela", specialty: "Armorer" },
+    { name: "Dracon", specialty: "Enchanters", magic: true },
+  ],
+  inferno: [
+    { name: "Fiona", specialty: "Hell Hounds" },
+    { name: "Marius", specialty: "Demons" },
+    { name: "Calh", specialty: "Gogs" },
+    { name: "Xeron", specialty: "Devils" },
+  ],
+  necropolis: [
+    { name: "Galthran", specialty: "Skeletons" },
+    { name: "Thant", specialty: "Animate Dead", magic: true },
+    { name: "Haart Lich", specialty: "Black Knights" },
+  ],
+  dungeon: [
+    { name: "Gunnar", specialty: "Logistics" },
+    { name: "Jeddite", specialty: "Resurrection", magic: true },
+    { name: "Mutare Drake", specialty: "Dragons" },
+  ],
+  stronghold: [
+    { name: "Shiva", specialty: "Rocs" },
+    { name: "Crag Hack", specialty: "Offense" },
+    { name: "Dessa", specialty: "Logistics", magic: true },
+    { name: "Gundula", specialty: "Offense", magic: true },
+    { name: "Kilgor", specialty: "Behemoths" },
+  ],
+  fortress: [
+    { name: "Drakon", specialty: "Gnolls" },
+    { name: "Tazar", specialty: "Armorer" },
+    { name: "Broghild", specialty: "Wyverns" },
+  ],
+  conflux: [
+    { name: "Monere", specialty: "Psychic Elementals" },
+    { name: "Grindan", specialty: "+350 Gold", magic: true },
+  ],
+  cove: [
+    { name: "Corkes", specialty: "Offense" },
+    { name: "Cassiopeia", specialty: "Nymphs" },
+    { name: "Miriam", specialty: "Scouting" },
+    { name: "Tark", specialty: "Nix" },
+  ],
+  factory: [
+    { name: "Dury", specialty: "Armorer" },
+    { name: "Frederick", specialty: "Automatons", magic: true },
+    { name: "Tavin", specialty: "Offense" },
+    { name: "Murdoch", specialty: "Archery" },
+  ],
+  bulwark: [
+    { name: "Eikthurn", specialty: "Mountain Rams" },
+    { name: "Creyle", specialty: "Mammoths" },
+    { name: "Ergon", specialty: "Pathfinding" },
+    { name: "Dalton", specialty: "Shield", magic: true },
+  ],
 };
 
 export function heroSlug(name: string): string {
@@ -122,12 +138,7 @@ export function heroSlug(name: string): string {
 export type HeroSeed = { slug: string; name: string; faction: FactionSlug; heroClass: 0 | 1; active: boolean };
 
 export function defaultHeroSeeds(): HeroSeed[] {
-  const out: HeroSeed[] = [];
-  for (const f of FACTION_SLUGS) {
-    const r = DEFAULT_HEROES[f];
-    for (const name of r.might) out.push({ slug: heroSlug(name), name, faction: f, heroClass: 0, active: true });
-    for (const name of r.magic) out.push({ slug: heroSlug(name), name, faction: f, heroClass: 1, active: true });
-    for (const name of r.campaign ?? []) out.push({ slug: heroSlug(name), name, faction: f, heroClass: 0, active: false });
-  }
-  return out;
+  return FACTION_SLUGS.flatMap((f) =>
+    DEFAULT_HEROES[f].map((h): HeroSeed => ({ slug: heroSlug(h.name), name: h.name, faction: f, heroClass: h.magic ? 1 : 0, active: true })),
+  );
 }

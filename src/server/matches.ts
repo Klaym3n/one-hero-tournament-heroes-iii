@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, inArray, ne, or } from "drizzle-orm";
+import { and, asc, eq, inArray, ne, or } from "drizzle-orm";
 import { db, type Tx } from "@/db";
 import {
   disputes,
@@ -131,6 +131,8 @@ async function resetDownstream(tx: Tx, matchId: string, slot: "A" | "B") {
       winnerId: null,
       scoreA: 0,
       scoreB: 0,
+      colorsA: null,
+      colorsB: null,
       completedAt: null,
     })
     .where(eq(matches.id, matchId));
@@ -142,7 +144,18 @@ async function resetDownstream(tx: Tx, matchId: string, slot: "A" | "B") {
   }
 }
 
-type ResultInput = { winnerId: string; scoreA?: number; scoreB?: number; walkover?: boolean };
+type ResultInput = { winnerId: string; scoreA?: number; scoreB?: number; colorsA?: string[] | null; colorsB?: string[] | null; walkover?: boolean };
+
+/** Kolory graczy w kolejnych grach raportu (null dla raportów bez kolorów). */
+async function reportColors(tx: Tx, reportId: string): Promise<{ colorsA: string[] | null; colorsB: string[] | null }> {
+  const games = await tx
+    .select({ a: matchReportGames.colorA, b: matchReportGames.colorB })
+    .from(matchReportGames)
+    .where(eq(matchReportGames.reportId, reportId))
+    .orderBy(asc(matchReportGames.gameNo));
+  if (!games.length || games.some((g) => !g.a || !g.b)) return { colorsA: null, colorsB: null };
+  return { colorsA: games.map((g) => g.a!), colorsB: games.map((g) => g.b!) };
+}
 
 /** Zapisuje wynik meczu i przesuwa graczy w drabince. */
 export async function applyResult(tx: Tx, m: Match, r: ResultInput, opts: { force?: boolean } = {}) {
@@ -164,7 +177,16 @@ export async function applyResult(tx: Tx, m: Match, r: ResultInput, opts: { forc
 
   await tx
     .update(matches)
-    .set({ status: r.walkover ? "WALKOVER" : "CONFIRMED", winnerId: r.winnerId, scoreA, scoreB, completedAt: new Date() })
+    .set({
+      status: r.walkover ? "WALKOVER" : "CONFIRMED",
+      winnerId: r.winnerId,
+      scoreA,
+      scoreB,
+      // walkower nie ma rozegranej gry, więc i kolorów
+      colorsA: r.walkover ? null : (r.colorsA ?? null),
+      colorsB: r.walkover ? null : (r.colorsB ?? null),
+      completedAt: new Date(),
+    })
     .where(eq(matches.id, m.id));
 
   if (m.nextMatchId && m.nextSlot) await fillSlot(tx, m.nextMatchId, m.nextSlot, r.winnerId);
@@ -190,12 +212,7 @@ export async function applyResult(tx: Tx, m: Match, r: ResultInput, opts: { forc
 
 async function reportContext(m: Match): Promise<ReportContext> {
   const [heroes, templates] = await Promise.all([getHeroes(true), getTemplates(m.tournamentId, true)]);
-  const heroesByFaction = new Map<string, Set<string>>();
-  for (const h of heroes) {
-    if (!heroesByFaction.has(h.faction)) heroesByFaction.set(h.faction, new Set());
-    heroesByFaction.get(h.faction)!.add(h.slug);
-  }
-  return { bestOf: m.bestOf, heroesByFaction, activeTemplateIds: new Set(templates.map((t) => t.id)) };
+  return { bestOf: m.bestOf, activeHeroes: new Set(heroes.map((h) => h.slug)), activeTemplateIds: new Set(templates.map((t) => t.id)) };
 }
 
 async function sideOf(tx: Tx, m: Match, userId: string): Promise<"A" | "B" | null> {
@@ -234,6 +251,8 @@ async function insertReport(tx: Tx, m: Match, userId: string, raw: unknown, ctx:
       factionB: g.factionB,
       heroA: g.heroA,
       heroB: g.heroB,
+      colorA: g.colorA,
+      colorB: g.colorB,
       endDay: mwdToIndex(g.day),
       notes: g.notes || null,
     })),
@@ -317,7 +336,7 @@ export async function acceptReport(user: SessionUser, reportId: string) {
 
     await tx.update(matchReports).set({ status: "ACCEPTED", decidedAt: new Date(), decidedById: user.id }).where(eq(matchReports.id, rep.id));
     await revision(tx, m.id, user.id, "REPORT_ACCEPTED", snap(m), { reportId: rep.id, winnerId: rep.winnerId, scoreA: rep.scoreA, scoreB: rep.scoreB });
-    await applyResult(tx, m, { winnerId: rep.winnerId, scoreA: rep.scoreA, scoreB: rep.scoreB });
+    await applyResult(tx, m, { winnerId: rep.winnerId, scoreA: rep.scoreA, scoreB: rep.scoreB, ...(await reportColors(tx, rep.id)) });
     await notifyUsers([rep.submittedById], {
       type: "REPORT_ACCEPTED",
       title: "Wynik zatwierdzony",
@@ -394,7 +413,7 @@ export async function staffAcceptReport(staff: SessionUser, reportId: string, re
       .set({ status: "REJECTED", decidedAt: new Date(), decidedById: staff.id })
       .where(and(eq(matchReports.matchId, m.id), inArray(matchReports.status, ["SUBMITTED", "ACCEPTED"]), ne(matchReports.id, rep.id)));
     await tx.update(matchReports).set({ status: "ACCEPTED", decidedAt: new Date(), decidedById: staff.id }).where(eq(matchReports.id, rep.id));
-    await applyResult(tx, m, { winnerId: rep.winnerId, scoreA: rep.scoreA, scoreB: rep.scoreB }, { force });
+    await applyResult(tx, m, { winnerId: rep.winnerId, scoreA: rep.scoreA, scoreB: rep.scoreB, ...(await reportColors(tx, rep.id)) }, { force });
     await closeDisputes(tx, m.id, staff.id, resolution || "Zatwierdzono raport");
     const after = { winnerId: rep.winnerId, scoreA: rep.scoreA, scoreB: rep.scoreB, reportId: rep.id };
     await revision(tx, m.id, staff.id, "STAFF_ACCEPT", snap(m), after, resolution);
@@ -418,7 +437,7 @@ export async function staffSetResult(staff: SessionUser, matchId: string, raw: u
       .set({ status: "SUPERSEDED" })
       .where(and(eq(matchReports.matchId, m.id), inArray(matchReports.status, ["SUBMITTED", "ACCEPTED"])));
     const { report, value, winnerId } = await insertReport(tx, m, staff.id, raw, ctx, { byStaff: true, status: "ACCEPTED" });
-    await applyResult(tx, m, { winnerId, scoreA: value.scoreA, scoreB: value.scoreB }, { force });
+    await applyResult(tx, m, { winnerId, scoreA: value.scoreA, scoreB: value.scoreB, colorsA: value.games.map((g) => g.colorA), colorsB: value.games.map((g) => g.colorB) }, { force });
     await closeDisputes(tx, m.id, staff.id, reason);
     const after = { winnerId, scoreA: value.scoreA, scoreB: value.scoreB, reportId: report.id };
     await revision(tx, m.id, staff.id, "STAFF_EDIT", snap(m), after, reason);
@@ -459,7 +478,7 @@ export async function staffResetMatch(staff: SessionUser, matchId: string, reaso
     }
     await tx
       .update(matches)
-      .set({ status: m.playerAId && m.playerBId ? "PENDING" : "WAITING", winnerId: null, scoreA: 0, scoreB: 0, completedAt: null })
+      .set({ status: m.playerAId && m.playerBId ? "PENDING" : "WAITING", winnerId: null, scoreA: 0, scoreB: 0, colorsA: null, colorsB: null, completedAt: null })
       .where(eq(matches.id, m.id));
     await tx
       .update(matchReports)

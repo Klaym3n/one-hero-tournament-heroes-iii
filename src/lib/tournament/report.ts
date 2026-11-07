@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isFactionSlug } from "@/data/factions";
-import { isValidMWD } from "@/lib/mwd";
+import { PLAYER_COLOR_SLUGS } from "@/data/colors";
+import { isValidMWD, mwdCode, mwdToIndex, MAX_END_DAY, MAX_END_DAY_INDEX } from "@/lib/mwd";
 
 export const VOD_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "twitch.tv", "www.twitch.tv", "m.twitch.tv", "kick.com", "www.kick.com"];
 
@@ -16,6 +17,8 @@ export function isAllowedVodUrl(url: string): boolean {
 export const reportGameSchema = z.object({
   winner: z.enum(["A", "B"]),
   mapTemplateId: z.string().uuid(),
+  colorA: z.enum(PLAYER_COLOR_SLUGS),
+  colorB: z.enum(PLAYER_COLOR_SLUGS),
   factionA: z.string(),
   factionB: z.string(),
   heroA: z.string().min(1),
@@ -35,8 +38,8 @@ export type ReportGameInput = z.infer<typeof reportGameSchema>;
 
 export type ReportContext = {
   bestOf: number;
-  /** slug frakcji → zbiór slugów aktywnych bohaterów */
-  heroesByFaction: Map<string, Set<string>>;
+  /** slugi aktywnych bohaterów – gracz może grać bohaterem z dowolnej frakcji, nie tylko startowej */
+  activeHeroes: Set<string>;
   activeTemplateIds: Set<string>;
 };
 
@@ -54,7 +57,10 @@ export type ValidationResult = { ok: true; value: ValidReport } | { ok: false; e
 /** Walidacja wyniku serii BoN i zawartości każdej gry. */
 export function validateReport(raw: unknown, ctx: ReportContext): ValidationResult {
   const parsed = reportSchema.safeParse(raw);
-  if (!parsed.success) return { ok: false, errors: ["Nieprawidłowy format raportu."] };
+  if (!parsed.success) {
+    const colorIssue = parsed.error.issues.some((i) => i.path[0] === "games" && (i.path[2] === "colorA" || i.path[2] === "colorB"));
+    return { ok: false, errors: [colorIssue ? "Wybierz kolory obu graczy w każdej grze." : "Nieprawidłowy format raportu."] };
+  }
   const { games, summary, vodUrl } = parsed.data;
   const errors: string[] = [];
   const need = Math.ceil(ctx.bestOf / 2);
@@ -70,6 +76,7 @@ export function validateReport(raw: unknown, ctx: ReportContext): ValidationResu
     if (a >= need || b >= need) errors.push(`Gra ${n}: seria była już rozstrzygnięta.`);
     if (g.winner === "A") a++;
     else b++;
+    if (g.colorA === g.colorB) errors.push(`Gra ${n}: gracze nie mogą mieć tego samego koloru.`);
     if (!ctx.activeTemplateIds.has(g.mapTemplateId)) errors.push(`Gra ${n}: nieznany szablon mapy.`);
     for (const [side, faction, hero] of [
       ["A", g.factionA, g.heroA],
@@ -80,11 +87,12 @@ export function validateReport(raw: unknown, ctx: ReportContext): ValidationResu
         errors.push(`Gra ${n}: nieznana frakcja ${player}.`);
         continue;
       }
-      if (!ctx.heroesByFaction.get(faction)?.has(hero)) {
-        errors.push(`Gra ${n}: bohater ${player} nie należy do wybranej frakcji.`);
+      if (!ctx.activeHeroes.has(hero)) {
+        errors.push(`Gra ${n}: bohater ${player} jest niedostępny w turnieju.`);
       }
     }
     if (!isValidMWD(g.day)) errors.push(`Gra ${n}: nieprawidłowy dzień (format M-T-D, np. 142).`);
+    else if (mwdToIndex(g.day) > MAX_END_DAY_INDEX) errors.push(`Gra ${n}: rozgrywka musi zakończyć się najpóźniej w dniu ${mwdCode(MAX_END_DAY)}.`);
   });
 
   if (a < need && b < need && games.length >= need) errors.push("Seria nie została rozstrzygnięta.");

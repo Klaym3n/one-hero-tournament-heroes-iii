@@ -4,6 +4,8 @@ import { FACTION_BY_SLUG, type FactionSlug } from "@/data/factions";
 import { formatDay } from "@/lib/mwd";
 import { fmtDateTime } from "@/lib/labels";
 import type { AssetManifest } from "@/lib/assets";
+import { playerColor } from "@/data/colors";
+import { PlayerFlag } from "@/components/game/PlayerFlag";
 
 export type ReportGameView = {
   gameNo: number;
@@ -13,6 +15,8 @@ export type ReportGameView = {
   factionB: string;
   heroA: string;
   heroB: string;
+  colorA: string | null;
+  colorB: string | null;
   endDay: number;
   notes: string | null;
 };
@@ -37,14 +41,20 @@ const REPORT_STATUS: Record<string, [string, string]> = {
   SUPERSEDED: ["Zastąpiony", "badge"],
 };
 
-function Side({ faction, hero, heroName, assets, winner, align }: { faction: string; hero: string; heroName: string; assets: AssetManifest; winner: boolean; align: "left" | "right" }) {
+function Side({ nick, color, faction, hero, heroName, assets, winner, align }: { nick: string; color: string | null; faction: string; hero: string; heroName: string; assets: AssetManifest; winner: boolean; align: "left" | "right" }) {
+  const c = playerColor(color);
   return (
     <div className={`flex items-center gap-2 ${align === "right" ? "flex-row-reverse text-right" : ""}`}>
+      <PlayerFlag color={color} flags={assets.flags} size={20} />
       <FactionIcon slug={faction} hasImage={assets.factions.includes(`${faction}.png`)} size={28} />
       <HeroPortrait slug={hero} name={heroName} faction={faction} hasImage={assets.heroes.includes(`${hero}.png`)} size={30} />
       <div className="min-w-0">
         <p className={`truncate text-sm ${winner ? "font-bold text-gold-light" : ""}`}>{heroName}</p>
-        <p className="truncate text-xs text-cream-dim">{FACTION_BY_SLUG[faction as FactionSlug]?.name ?? faction}</p>
+        <p className="truncate text-xs text-cream-dim">
+          {nick}
+          {c ? ` · ${c.name.toLowerCase()}` : ""}
+        </p>
+        <p className="truncate text-[11px] text-cream-dim/80">{FACTION_BY_SLUG[faction as FactionSlug]?.name ?? faction}</p>
       </div>
     </div>
   );
@@ -80,6 +90,7 @@ export function ReportView({
           {report.submittedBy} · {fmtDateTime(report.createdAt)}
         </span>
       </header>
+
       <ol className="divide-y divide-gold/10">
         {report.games.map((g) => {
           const aWon = g.winnerId === playerAId;
@@ -93,9 +104,9 @@ export function ReportView({
                 <span className="badge badge-gold">Wygrywa {aWon ? nickA : nickB}</span>
               </div>
               <div className="grid grid-cols-[1fr_auto_1fr] max-sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-                <Side faction={g.factionA} hero={g.heroA} heroName={heroNames[g.heroA] ?? g.heroA} assets={assets} winner={aWon} align="left" />
+                <Side nick={nickA} color={g.colorA} faction={g.factionA} hero={g.heroA} heroName={heroNames[g.heroA] ?? g.heroA} assets={assets} winner={aWon} align="left" />
                 <span className="font-display text-xs text-cream-dim">vs</span>
-                <Side faction={g.factionB} hero={g.heroB} heroName={heroNames[g.heroB] ?? g.heroB} assets={assets} winner={!aWon} align="right" />
+                <Side nick={nickB} color={g.colorB} faction={g.factionB} hero={g.heroB} heroName={heroNames[g.heroB] ?? g.heroB} assets={assets} winner={!aWon} align="right" />
               </div>
               {g.notes && <p className="mt-2 text-sm text-cream-dim italic">„{g.notes}”</p>}
             </li>

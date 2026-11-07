@@ -31,7 +31,7 @@ export function AcceptReport({ reportId, label }: { reportId: string; label: str
   );
 }
 
-export function StaffResultEditor(props: { matchId: string; bestOf: number; nickA: string; nickB: string; templates: { id: string; name: string }[]; heroes: HeroOption[]; assets: { factions: string[]; heroes: string[] } }) {
+export function StaffResultEditor(props: { matchId: string; bestOf: number; nickA: string; nickB: string; avatarA?: string | null; avatarB?: string | null; templates: { id: string; name: string }[]; heroes: HeroOption[]; assets: { factions: string[]; heroes: string[] } }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [force, setForce] = useState(false);

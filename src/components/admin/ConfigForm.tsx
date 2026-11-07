@@ -5,13 +5,14 @@ import { updateConfigAction } from "@/server/admin-actions";
 import { useAction } from "@/components/ui/useAction";
 import { FeedbackBox } from "@/components/ui/FeedbackBox";
 import { Markdown } from "@/components/ui/Markdown";
+import { GAME_SETTING_FIELDS, type GameSettings } from "@/lib/tournament/game-settings";
 
 type Config = {
   name: string;
   tagline: string;
   bannerUrl: string;
   currentRoundLabel: string;
-  gameSettings: { difficulty: string; turnTimer: string; handicap: string; other: string };
+  gameSettings: GameSettings;
   groupBestOf: number;
   knockoutBestOf: number;
   finalBestOf: number;
@@ -71,22 +72,15 @@ export function GeneralConfigForm({ initial }: { initial: Config }) {
       </div>
       <fieldset className="grid gap-4 max-sm:grid-cols-1 sm:grid-cols-2">
         <legend className="mb-2 font-display font-bold text-gold-light">Ustawienia gry</legend>
-        <div>
-          <label className="label">Poziom trudności</label>
-          <input className="input" {...gs("difficulty")} />
-        </div>
-        <div>
-          <label className="label">Czas na turę</label>
-          <input className="input" {...gs("turnTimer")} />
-        </div>
-        <div>
-          <label className="label">Handicap</label>
-          <input className="input" {...gs("handicap")} />
-        </div>
-        <div>
-          <label className="label">Inne zasady</label>
-          <input className="input" {...gs("other")} />
-        </div>
+        {GAME_SETTING_FIELDS.map((f) => (
+          <div key={f.key}>
+            <label className="label" htmlFor={`gs-${f.key}`}>
+              {f.label}
+            </label>
+            <input id={`gs-${f.key}`} className="input" maxLength={200} placeholder={f.default} {...gs(f.key)} />
+          </div>
+        ))}
+        <p className="text-xs text-cream-dim sm:col-span-2">Puste pole nie jest wyświetlane na stronie turnieju. Sekcja „Ustawienia gry” jest widoczna od otwarcia zapisów.</p>
       </fieldset>
       <fieldset className="grid gap-4 max-sm:grid-cols-1 sm:grid-cols-2">
         <legend className="mb-2 font-display font-bold text-gold-light">Format meczów</legend>

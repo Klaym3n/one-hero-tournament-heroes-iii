@@ -45,7 +45,7 @@ export function PartnersSection({ partners, invite }: { partners: Partner[]; inv
         </ul>
       ) : (
         <p className="max-w-xs text-sm text-cream-dim">
-          Chcesz wesprzeć One Hero Open jako partner? Odezwij się do Turniejów Orzecha.
+          Chcesz wesprzeć One Hero Open jako partner?
           {invite && (
             <a href={invite} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-ghost mt-2 flex w-fit">
               <DiscordIcon /> Napisz na Discordzie

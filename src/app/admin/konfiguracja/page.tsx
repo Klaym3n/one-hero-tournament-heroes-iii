@@ -3,6 +3,7 @@ import { Frame } from "@/components/ui/Frame";
 import { ContentEditor, GeneralConfigForm } from "@/components/admin/ConfigForm";
 import { pageRequireRole } from "@/lib/authz";
 import { getTournament } from "@/lib/tournament/current";
+import { normalizeGameSettings } from "@/lib/tournament/game-settings";
 
 export default async function AdminConfigPage() {
   await connection();
@@ -18,7 +19,7 @@ export default async function AdminConfigPage() {
             tagline: t.tagline,
             bannerUrl: t.bannerUrl ?? "",
             currentRoundLabel: t.currentRoundLabel ?? "",
-            gameSettings: t.gameSettings,
+            gameSettings: normalizeGameSettings(t.gameSettings),
             groupBestOf: t.groupBestOf,
             knockoutBestOf: t.knockoutBestOf,
             finalBestOf: t.finalBestOf,

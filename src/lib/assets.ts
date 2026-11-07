@@ -2,7 +2,7 @@ import "server-only";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
-export type AssetManifest = { factions: string[]; heroes: string[] };
+export type AssetManifest = { factions: string[]; heroes: string[]; flags: string[] };
 
 let cached: { at: number; value: AssetManifest } | null = null;
 const TTL = 60_000;
@@ -21,10 +21,10 @@ async function list(dir: string): Promise<string[]> {
   }
 }
 
-/** Lista wgranych grafik frakcji/bohaterów (nazwy plików), by nie odpytywać brakujących plików. */
+/** Lista wgranych grafik frakcji/bohaterów/flag (nazwy plików), by nie odpytywać brakujących plików. */
 export async function getAssetManifest(): Promise<AssetManifest> {
   if (cached && Date.now() - cached.at < TTL) return cached.value;
-  const value = { factions: await list("factions"), heroes: await list("heroes") };
+  const value = { factions: await list("factions"), heroes: await list("heroes"), flags: await list("flags") };
   cached = { at: Date.now(), value };
   return value;
 }
