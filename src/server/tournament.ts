@@ -45,6 +45,27 @@ const NICK_ERROR = "Nick musi mieć 2–24 znaki (litery, cyfry, spacja i symbol
 
 export type RegisterResult = { status: "registered" } | { status: "needs_discord"; inviteUrl: string | null };
 
+// wynik sprawdzenia członkostwa (discordId → { jest na serwerze, kiedy sprawdzono }) – żeby nie pytać API Discorda przy każdym wejściu na stronę
+const membershipCache = new Map<string, { member: boolean; at: number }>();
+const MEMBERSHIP_TTL = 5 * 60_000;
+
+/**
+ * Czy użytkownik jest na serwerze Discord turnieju.
+ * null = nie da się tego sprawdzić (brak bota, konto testowe albo błąd API).
+ */
+export async function isOnDiscordServer(user: Pick<SessionUser, "discordId">): Promise<boolean | null> {
+  if (!env().discordBotConfigured || !/^\d+$/.test(user.discordId)) return null;
+  const hit = membershipCache.get(user.discordId);
+  if (hit && Date.now() - hit.at < MEMBERSHIP_TTL) return hit.member;
+  try {
+    const member = await isGuildMember(user.discordId);
+    membershipCache.set(user.discordId, { member, at: Date.now() });
+    return member;
+  } catch {
+    return null;
+  }
+}
+
 async function ensureGuildMembership(user: SessionUser): Promise<RegisterResult | null> {
   const e = env();
   if (!e.discordBotConfigured || !/^\d+$/.test(user.discordId)) return null; // brak bota lub konto testowe

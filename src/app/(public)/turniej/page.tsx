@@ -4,6 +4,8 @@ import { Frame, PageTitle } from "@/components/ui/Frame";
 import { MarkdownFrame } from "@/components/ui/MarkdownFrame";
 import { DiscordIcon } from "@/components/ui/icons";
 import { env } from "@/lib/env";
+import { getSessionUser } from "@/lib/auth/session";
+import { isOnDiscordServer } from "@/server/tournament";
 import { getTournament } from "@/lib/tournament/current";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { GAME_SETTING_FIELDS, normalizeGameSettings } from "@/lib/tournament/game-settings";
@@ -18,7 +20,12 @@ export default async function TournamentInfoPage() {
   // ustawienia gry pokazujemy dopiero od otwarcia zapisów
   const showSettings = t.phase !== "DRAFT" && settings.length > 0;
   // w fazie przygotowań zapraszamy na serwer Discord (ogłoszenia o otwarciu zapisów)
-  const invite = t.phase === "DRAFT" ? env().DISCORD_INVITE_URL : "";
+  // tylko dla osób spoza serwera: niezalogowani i ci, których nie ma na serwerze (lub nie da się tego sprawdzić)
+  let invite = t.phase === "DRAFT" ? env().DISCORD_INVITE_URL : "";
+  if (invite) {
+    const user = await getSessionUser();
+    if (user && (await isOnDiscordServer(user)) === true) invite = "";
+  }
 
   return (
     <div className="space-y-8">
@@ -46,11 +53,10 @@ export default async function TournamentInfoPage() {
           {invite && (
             <Frame title="Dołącz do społeczności">
               <div className="space-y-4 text-sm">
-                <p>Zapisy jeszcze nie ruszyły. Dołącz do naszego serwera Discord – tam jako pierwszy dowiesz się o otwarciu zapisów, harmonogramie i nagrodach.</p>
-                <p className="text-cream-dim">Konto na serwerze będzie też potrzebne do zapisu na turniej i powiadomień o meczach.</p>
-                <a href={invite} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full justify-center gap-2">
-                  <DiscordIcon size={18} />
-                  Dołącz do serwera Discord
+                <p>Zapisy jeszcze nie ruszyły. Dołącz do naszego serwera Discord.</p>
+                <p className="text-cream-dim">Dołączenie do serwera Discord będzie wymagane, aby zapisać się do turnieju.</p>
+                <a href={invite} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-ghost w-fit">
+                  <DiscordIcon /> Dołącz do Discorda
                 </a>
               </div>
             </Frame>
