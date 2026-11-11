@@ -22,6 +22,8 @@ export default async function TournamentInfoPage() {
   const settings = GAME_SETTING_FIELDS.map((f) => [f.label, s[f.key]] as const).filter(([, v]) => v);
   // ustawienia gry pokazujemy dopiero od otwarcia zapisów
   const showSettings = t.phase !== "DRAFT" && settings.length > 0;
+  // szablon mapy udostępniamy od otwarcia zapisów
+  const showTemplate = t.phase !== "DRAFT";
   // w fazie przygotowań zapraszamy na serwer Discord (ogłoszenia o otwarciu zapisów)
   // tylko dla osób spoza serwera: niezalogowani i ci, których nie ma na serwerze (lub nie da się tego sprawdzić)
   let invite = t.phase === "DRAFT" ? env().DISCORD_INVITE_URL : "";
@@ -54,9 +56,11 @@ export default async function TournamentInfoPage() {
         <div className="space-y-8">
           <div className="space-y-3">
             {t.prizesMd && <MarkdownFrame md={t.prizesMd} />}
-            <a href={TEMPLATE_URL} download className="btn w-full">
-              Pobierz szablon
-            </a>
+            {showTemplate && (
+              <a href={TEMPLATE_URL} download className="btn w-full">
+                Pobierz szablon
+              </a>
+            )}
           </div>
           {invite && (
             <Frame title="Dołącz do społeczności">
