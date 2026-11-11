@@ -12,6 +12,9 @@ import { GAME_SETTING_FIELDS, normalizeGameSettings } from "@/lib/tournament/gam
 
 export const metadata: Metadata = { title: "Informacje o turnieju" };
 
+/** Szablon mapy – plik z public/download (wbudowany w obraz przy buildzie). */
+const TEMPLATE_URL = "/download/JO-com-3.1-SuperHero.h3t";
+
 export default async function TournamentInfoPage() {
   await connection();
   const t = await getTournament();
@@ -49,7 +52,12 @@ export default async function TournamentInfoPage() {
           {t.scheduleMd && <MarkdownFrame md={t.scheduleMd} />}
         </div>
         <div className="space-y-8">
-          {t.prizesMd && <MarkdownFrame md={t.prizesMd} />}
+          <div className="space-y-3">
+            {t.prizesMd && <MarkdownFrame md={t.prizesMd} />}
+            <a href={TEMPLATE_URL} download className="btn w-full">
+              Pobierz szablon
+            </a>
+          </div>
           {invite && (
             <Frame title="Dołącz do społeczności">
               <div className="space-y-4 text-sm">
